@@ -367,7 +367,7 @@ static	int	read_pagination(char *buf, const int buf_len,
 int	main(int argc, char **argv)
 {
   int			file_c, input_fd;
-  unsigned long		read_c = 0, write_bytes_c = 0, dot_c = 0, read_size;
+  unsigned long		read_c = 0, write_bytes_c = 0, read_size;
   unsigned long		buf_len, write_max, to_write, min_write = 0;
   unsigned long		write_size, write_c = 0, last_write_c = 0;
   int			read_n, ret, eof_b = 0, open_out_b = 1;
@@ -693,9 +693,9 @@ int	main(int argc, char **argv)
        * dot sizes.
        */
       if (dot_size > 0) {
-	while (dot_c + dot_size < write_bytes_c) {
+	while (write_bytes_c > dot_size) {
 	  (void)fputc('.', stderr);
-	  dot_c += dot_size;
+	  write_bytes_c -= dot_size;
 	}
       }
       
