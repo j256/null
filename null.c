@@ -33,6 +33,8 @@ static  char    *ident_str =
   "$Id$";
 #endif
 
+static	char	*null_version = "1.0.0";
+
 #define BUFFER_SIZE	100000		/* size of buffer */
 #define WRITES_PER_SEC	10		/* throttle to X writes/sec.  X > 1. */
 #define PASS_CHAR	'p'		/* pass - argument */
@@ -351,6 +353,7 @@ int	main(int argc, char **argv)
   struct timeval	start, now, timeout;
   
   argv_help_string = "Null utility.  Also try --usage.";
+  argv_version_string = null_version;
   
   argv_process(args, argc, argv);
   if (very_verbose_b) {
