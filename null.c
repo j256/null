@@ -230,15 +230,22 @@ int	main(int argc, char **argv)
 	  }
 	}
       }
-      
-      write_c += write_size;
-      
-      /* print out our dots */
+
+      /*
+       * Print out our dots.  The problem here is when write_c
+       * overflows a long-integer and therefore our dot-loop will go
+       * infinite.  We therefore continually reset the dot sizes.
+       */
       if (dot_size > 0) {
+	write_c += write_size;
+	
 	while (dot_c + dot_size < write_c) {
 	  (void)fputc('.', stderr);
 	  dot_c += dot_size;
 	}
+	
+	write_c -= dot_c;
+	dot_c = 0;
       }
       
       /* do we need to shift the buffer down? */
