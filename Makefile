@@ -5,7 +5,7 @@
 PROG	= null
 
 INCS	= -I. -I/usr/local/inc $(INCLUDES)
-LIBS	= -L/usr/local/lib -largv $(LIBRARIES)
+LIBS	= -L/usr/local/lib -largv -lmd5 $(LIBRARIES)
 
 CFLAGS	= $(CCFLAGS)
 DESTDIR	= /usr/local/local/bin

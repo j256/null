@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "argv.h"
+#include "md5.h"
 
 #define BUFFER_SIZE	100000			/* size of buffer */
 
@@ -21,6 +22,7 @@
 static	int		buf_size = BUFFER_SIZE;	/* size of i/o buffer */
 static	int		dot_size = 0;		/* show a dot every X */
 static	char		flush_out = ARGV_FALSE;	/* flush output to files */
+static	char		run_md5	= ARGV_FALSE;	/* run md5 on data */
 static	char		non_block = ARGV_FALSE;	/* don't block on input */
 static	char		pass	= ARGV_FALSE;	/* pass data through */
 static	char		verbose	= ARGV_FALSE;	/* verbose flag */
@@ -36,6 +38,8 @@ static	argv_t	args[] = {
       "output-file",		"output file to write input" },
   { 'F',	"flush-output",	ARGV_BOOL,			&flush_out,
       NULL,			"flush output to files" },
+  { 'm',	"md5",		ARGV_BOOL,			&run_md5,
+      NULL,			"don't block on input" },
   { 'n',	"non-block",	ARGV_BOOL,			&non_block,
       NULL,			"don't block on input" },
   { 'p',	"pass-input",	ARGV_BOOL,			&pass,
@@ -68,7 +72,8 @@ int	main(int argc, char **argv)
   int		pass_n, ret, inc = 0, filec, dot_c;
   FILE		**streams = NULL;
   fd_set	listen_set;
-  char		*buf;
+  char		*buf, md5_result[MD5_SIZE], *md5_p;
+  md5_t		md5;
   
   argv_process(args, argc, argv);
   if (very_verbose)
@@ -100,6 +105,9 @@ int	main(int argc, char **argv)
   
   buf = (char *)malloc(buf_size);
   
+  if (run_md5)
+    md5_init(&md5);
+  
   /* read in stuff and count the number */
   dot_c = dot_size;
   for (;;) {
@@ -129,6 +137,8 @@ int	main(int argc, char **argv)
     
     if (very_verbose)
       (void)fprintf(stderr, "Read %d bytes\n", ret);
+    if (run_md5)
+      md5_process_bytes(&md5, buf, ret);
     
     if (dot_size > 0) {
       dot_c -= ret;
@@ -154,6 +164,14 @@ int	main(int argc, char **argv)
   /* write some report info */
   if (verbose)
     (void)fprintf(stderr, "%s: processed %s\n", argv_program, byte_size(inc));
+  
+  if (run_md5) {
+    md5_finish(&md5, md5_result);
+    (void)fprintf(stderr, "%s: md5 signature of input = '", argv_program);
+    for (md5_p = md5_result; md5_p < md5_result + MD5_SIZE; md5_p++)
+      (void)fprintf(stderr, "%02x", *(unsigned char *)md5_p);
+    (void)fputs("'\n", stderr);
+  }
   
   /* close the output paths */
   for (filec = pass_n; filec < outfiles.aa_entryn + pass_n; filec++) {
