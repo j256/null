@@ -59,6 +59,7 @@ static	unsigned long	throttle_size = 0;	/* throttle bytes/second */
 static	int		verbose_b = ARGV_FALSE;	/* verbose flag */
 static	int		very_verbose_b = ARGV_FALSE; /* very-verbose flag */
 static	int		write_page_b = 0;	/* output pagination info */
+static	char		*input_path = NULL;	/* input file we are reading */
 static	argv_array_t	outfiles;		/* outfiles for read data */
 
 static	argv_t	args[] = {
@@ -90,6 +91,8 @@ static	argv_t	args[] = {
     NULL,			"very verbose messages" },
   { 'w',	"write-pagination", ARGV_BOOL_INT,		&write_page_b,
     NULL,			"write paginate data (use with -r)" },
+  { ARGV_MAYBE,	"input-file",	ARGV_CHAR_P,			&input_path,
+    "file",			"file we are reading else stdin" },
   { ARGV_LAST }
 };
 
@@ -345,7 +348,7 @@ static	int	read_pagination(char *buf, const int buf_len,
 
 int	main(int argc, char **argv)
 {
-  int			file_c;
+  int			file_c, input_fd;
   unsigned long		read_c = 0, write_c = 0, dot_c = 0, read_size;
   unsigned long		buf_len, write_max, write_size, to_write;
   int			read_n, ret, eof_b = 0;
@@ -370,7 +373,7 @@ int	main(int argc, char **argv)
     (void)fprintf(stderr,
                   "  tee, and md5sum with additional features.\n");
     (void)fprintf(stderr,
-		  "  For a list of the command-line options enter: %s --usage\n",
+		  "  For a list of command-line options enter: %s --usage\n",
                   argv_argv[0]);
     exit(0);
   }
@@ -382,9 +385,21 @@ int	main(int argc, char **argv)
     write_page_b = 0;
   }
   
+  if (input_path == NULL) {
+    input_fd = STDIN_FD;
+  }
+  else {
+    input_fd = open(input_path, O_RDONLY, 0);
+    if (input_fd < 0) {
+      (void)fprintf(stderr, "%s: cannot open(%s): %s\n", 
+		    argv_program, input_path, strerror(errno));
+      exit(1);
+    }
+  }
+  
   /* make stdin non-blocking */
   if (non_block_b) {
-    (void)fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) | O_NONBLOCK);
+    (void)fcntl(input_fd, F_SETFL, fcntl(input_fd, F_GETFL, 0) | O_NONBLOCK);
   }
   
   /* open output paths if needed -- we add one to accomodate stdout */
@@ -435,14 +450,14 @@ int	main(int argc, char **argv)
     else {
       if (non_block_b) {
 	FD_ZERO(&listen_set);
-	FD_SET(0, &listen_set);
+	FD_SET(input_fd, &listen_set);
 	ret = select(1, &listen_set, NULL, NULL, NULL);
 	if (ret == -1) {
 	  (void)fprintf(stderr, "%s: select error: %s\n",
 			argv_program, strerror(errno));
 	  exit(1);
 	}
-	if (! FD_ISSET(0, &listen_set)) {
+	if (! FD_ISSET(input_fd, &listen_set)) {
 	  continue;
 	}
       }
@@ -459,7 +474,7 @@ int	main(int argc, char **argv)
 	}
 	
 	/* read from standard-in */
-	read_n = read(STDIN_FD, buf + buf_len, read_size);
+	read_n = read(input_fd, buf + buf_len, read_size);
 	if (read_n < 0) {
 	  (void)fprintf(stderr, "%s: read on stdin error: %s\n",
 			argv_program, strerror(errno));
@@ -666,6 +681,11 @@ int	main(int argc, char **argv)
     if (streams[file_c] != NULL) {
       (void)fclose(streams[file_c]);
     }
+  }
+  
+  /* close the input file if not stdin */
+  if (input_fd != STDIN_FD) {
+    (void)close(input_fd);
   }
   
   /*

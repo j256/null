@@ -1,5 +1,7 @@
 Sat Feb 24 13:20:43 2001  Gray Watson  <gray@whopper.be.256.com>
 
+	* Added --inpit-file.
+
 	* Added --stop-after argument.
 
 Tue Mar  7 11:44:05 2000  Gray Watson  <gray@burger.256.com>
