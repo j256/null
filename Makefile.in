@@ -44,6 +44,6 @@ port :: $(PORTFLS)
 	cp $(PORTFLS) $@
 	mv $@/Makefile.all.in $@/Makefile.in
 	@ echo ''
-	@ echo 'Please rename $@ to argv-version and tar up file'
+	@ echo 'Please rename $@ and tar up file'
 
 .include <local.mk>
