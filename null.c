@@ -60,23 +60,23 @@ static	argv_array_t	outfiles;		/* outfiles for read data */
 
 static	argv_t	args[] = {
   { 'b',	"buffer-size",	ARGV_U_SIZE,			&buf_size,
-    "size",			"size of input output buffer" },
+    "size",			"size of input and output buffer" },
   { 'd',	"dot-blocks",	ARGV_U_SIZE,			&dot_size,
     "size",			"show a dot each X bytes of input" },
   { 'f',	"output-file",	ARGV_CHAR_P | ARGV_FLAG_ARRAY,	&outfiles,
-    "output-file",		"output file to write input" },
+    "output-file",		"output file(s) to write input" },
   { 'F',	"flush-output",	ARGV_BOOL_INT,			&flush_out_b,
     NULL,			"flush output to files" },
   { 'h',	"help",		ARGV_BOOL_INT,			&help_b,
-    NULL,			"output our help string" },
+    NULL,			"display help string" },
   { 'm',	"md5",		ARGV_BOOL_INT,			&run_md5_b,
     NULL,			"run input bytes through md5" },
   { 'n',	"non-block",	ARGV_BOOL_INT,			&non_block_b,
     NULL,			"don't block on input" },
   { PASS_CHAR,	"pass-input",	ARGV_BOOL_INT,			&pass_b,
-    NULL,			"pass input data to output" },
+    NULL,			"write input to standard output" },
   { 'r',	"read-pagination", ARGV_BOOL_INT,		&read_page_b,
-    NULL,			"read pagination data" },
+    NULL,			"read pagination data (use with -w)" },
   { 't',	"throttle-size", ARGV_U_SIZE,			&throttle_size,
     "size",			"throttle output to X bytes / sec" },
   { 'v',	"verbose",	ARGV_BOOL_INT,			&verbose_b,
@@ -84,7 +84,7 @@ static	argv_t	args[] = {
   { 'V',	"very-verbose",	ARGV_BOOL_INT,		       &very_verbose_b,
     NULL,			"very verbose messages" },
   { 'w',	"write-pagination", ARGV_BOOL_INT,		&write_page_b,
-    NULL,			"write paginate data" },
+    NULL,			"write paginate data (use with -r)" },
   { ARGV_LAST }
 };
 
