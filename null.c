@@ -9,10 +9,18 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
+
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #include <sys/time.h>
 
 #include "argv.h"
@@ -39,6 +47,7 @@ static  char    *ident_str =
 static	unsigned long	buf_size = BUFFER_SIZE;	/* size of i/o buffer */
 static	unsigned long	dot_size = 0;		/* show a dot every X */
 static	int		flush_out_b = ARGV_FALSE; /* flush output to files */
+static	int		help_b = ARGV_FALSE;	/* get help */
 static	int		run_md5_b = ARGV_FALSE;	/* run md5 on data */
 static	int		non_block_b = ARGV_FALSE; /* don't block on input */
 static	int		pass_b = ARGV_FALSE;	/* pass data through */
@@ -58,6 +67,8 @@ static	argv_t	args[] = {
     "output-file",		"output file to write input" },
   { 'F',	"flush-output",	ARGV_BOOL_INT,			&flush_out_b,
     NULL,			"flush output to files" },
+  { 'h',	"help",		ARGV_BOOL_INT,			&help_b,
+    NULL,			"output our help string" },
   { 'm',	"md5",		ARGV_BOOL_INT,			&run_md5_b,
     NULL,			"run input bytes through md5" },
   { 'n',	"non-block",	ARGV_BOOL_INT,			&non_block_b,
@@ -339,9 +350,23 @@ int	main(int argc, char **argv)
   md5_t			md5;
   struct timeval	start, now, timeout;
   
+  argv_help_string = "Null utility.  Also try --usage.";
+  
   argv_process(args, argc, argv);
   if (very_verbose_b) {
     verbose_b = 1;
+  }
+  
+  if (help_b) {
+    (void)fprintf(stderr, "Null Utility: http://256.com/sources/\n");
+    (void)fprintf(stderr,
+                  "  This utility combines the functionality of /dev/null,\n");
+    (void)fprintf(stderr,
+                  "  tee, and md5sm with additional features.\n");
+    (void)fprintf(stderr,
+		  "  For a list of the command-line options enter: %s --usage\n",
+                  argv_argv[0]);
+    exit(0);
   }
   
   if (write_page_b && (! pass_b)) {

@@ -1,1 +1,8 @@
 null
+configure
+port
+conf.log
+config.log
+config.cache
+config.status
+conf.h

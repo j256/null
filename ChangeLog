@@ -1,5 +1,7 @@
 Tue Mar  7 11:44:05 2000  Gray Watson  <gray@burger.256.com>
 
+	* Turning into a real package.
+
 	* Added pagination and fixed the md5 code.  Been wanting this for
  	a while.
 

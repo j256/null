@@ -32,8 +32,13 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
 
 #ifdef LOCAL
 #include "dmalloc.h"
@@ -41,20 +46,11 @@
 
 #include "argv.h"
 #include "argv_loc.h"
+#include "compat.h"
+#include "conf.h"
 
 static	char	*rcs_id =
   "$Id$";
-
-/*
- * LIBRARY DEFINES:
- */
-#define HAVE_STRCHR 1
-#define HAVE_STRCMP 1
-#define HAVE_STRCPY 1
-#define HAVE_STRLEN 1
-#define HAVE_STRNCMP 1
-#define HAVE_STRNCPY 1
-#define HAVE_STRSEP 0
 
 /* internal routines */
 static	void	do_list(argv_t *grid, const int arg_c, char **argv,
@@ -100,198 +96,6 @@ static	int	global_error	= GLOBAL_ERROR_SEE;	/* error processing */
 static	int	global_multi	= GLOBAL_MULTI_ACCEPT;	/* multi processing */
 static	int	global_usage	= GLOBAL_USAGE_LONG;	/* usage processing */
 static	int	global_lasttog	= GLOBAL_LASTTOG_DISABLE; /*last-arg toggling*/
-
-/****************************** compat routines ******************************/
-
-#if HAVE_STRCHR == 0
-/*
- * find CH in STR by searching backwards through the string
- */
-char	*strchr(const char *str, int ch)
-{
-  for (; *str != '\0'; str++) {
-    if (*str == (char)ch) {
-      return (char *)str;
-    }
-  }
-  
-  if (ch == '\0') {
-    return (char *)str;
-  }
-  else {
-    return 0L;
-  }
-}
-#endif /* HAVE_STRCHR == 0 */
-
-#if HAVE_STRCMP == 0
-/*
- * returns -1,0,1 on whether STR1 is <,==,> STR2
- */
-int	strcmp(const char *str1, const char *str2)
-{
-  for (; *str1 != '\0' && *str1 == *str2; str1++, str2++) {
-  }
-  return *str1 - *str2;
-}
-#endif /* HAVE_STRCMP == 0 */
-
-#if HAVE_STRCPY == 0
-/*
- * copies STR2 to STR1.  returns STR1
- */
-char	*strcpy(char *str1, const char *str2)
-{
-  char	*str_p;
-  
-  for (str_p = str1; *str2 != '\0'; str_p++, str2++) {
-    *str_p = *str2;
-  }
-  *str_p = '\0';
-  
-  return str1;
-}
-#endif /* HAVE_STRCPY == 0 */
-
-#if HAVE_STRLEN == 0
-/*
- * return the length in characters of STR
- */
-int	strlen(const char *str)
-{
-  int	len;
-  
-  for (len = 0; *str != '\0'; str++, len++) {
-  }
-  
-  return len;
-}
-#endif /* HAVE_STRLEN == 0 */
-
-#if HAVE_STRNCMP == 0
-/*
- * compare at most LEN chars in STR1 and STR2 and return -1,0,1 or STR1 - STR2
- */
-int	strncmp(const char *str1, const char *str2, const int len)
-{
-  int	len;
-  
-  for (len_c = 0; len_c < len; len_c++, str1++, str2++) {
-    if (*str1 != *str2 || *str1 == '\0') {
-      return *str1 - *str2;
-    }
-  }
-  
-  return 0;
-}
-#endif /* HAVE_STRNCMP == 0 */
-
-#if HAVE_STRNCPY == 0
-/*
- * copy STR2 to STR1 until LEN or '\0'
- */
-char	*strncpy(char *str1, const char *str2, const int len)
-{
-  char		*str1_p;
-  const char	*str2_p;
-  int		len_c, null_b = 0;
-  
-  str1_p = str1;
-  str2_p = str2;
-  
-  for (len_c = 0; len_c < len; len_c++) {
-    if (null_b || *str2_p == '\0') {
-      null_b = 1;
-      *str1_p = '\0';
-    }
-    else {
-      *str1_p = *str2_p;
-    }
-    
-    str1_p++;
-    str2_p++;
-  }
-  
-  return str1;
-}
-#endif /* HAVE_STRNCPY == 0 */
-
-#if HAVE_STRSEP == 0
-/*
- * char *argv_strsep
- *
- * DESCRIPTION:
- *
- * This is a function which should be in libc in every Unix.  Grumble.
- * It basically replaces the strtok function because it is reentrant.
- * This tokenizes a string by returning the next token in a string and
- * punching a \0 on the first delimiter character past the token.  The
- * difference from strtok is that you pass in the address of a string
- * pointer which will be shifted allong the buffer being processed.
- * With strtok you passed in a 0L for subsequant calls.  Yeach.
- *
- * This will count the true number of delimiter characters in the string
- * and will return an empty token (one with \0 in the zeroth position)
- * if there are two delimiter characters in a row.
- *
- * Consider the following example:
- *
- * char *tok, *str_p = "1,2,3, hello there ";
- *
- * while (1) { tok = strsep(&str_p, " ,"); if (tok == 0L) { break; } }
- *
- * strsep will return as tokens: "1", "2", "3", "", "hello", "there", "".
- * Notice the two empty "" tokens where there were two delimiter
- * characters in a row ", " and at the end of the string where there
- * was an extra delimiter character.  If you want to ignore these
- * tokens then add a test to see if the first character of the token
- * is \0.
- *
- * RETURNS:
- *
- * Success - Pointer to the next delimited token in the string.
- *
- * Failure - 0L if there are no more tokens.
- *
- * ARGUMENTS:
- *
- * string_p - Pointer to a string pointer which will be searched for
- * delimiters.  \0's will be added to this buffer.
- *
- * delim - List of delimiter characters which separate our tokens.  It
- * does not have to remain constant through all calls across the same
- * string.
- */
-char	*argv_strsep(char **string_p, const char *delim)
-{
-  char		*str_p, *tok;
-  const char	*delim_p;
-  
-  /* no tokens left? */
-  str_p = *string_p;
-  if (str_p == 0L) {
-    return 0L;
-  }
-  
-  /* now find end of token */
-  tok = str_p;
-  for (; *str_p != '\0'; str_p++) {
-    
-    for (delim_p = delim; *delim_p != '\0'; delim_p++) {
-      if (*delim_p == *str_p) {
-	/* punch the '\0' */
-	*str_p = '\0';
-	*string_p = str_p + 1;
-	return tok;
-      }
-    }
-  }
-  
-  /* there are no more delimiter characters */
-  *string_p = 0L;
-  return tok;
-}
-#endif /* HAVE_STRSEP == 0 */
 
 /****************************** startup routine ******************************/
 
@@ -518,7 +322,7 @@ static	char	**vectorize(char *str, const char *tok, int *num_tok_p)
   str_p = tmp;
   tok_c = 0;
   while (1) {
-    tok_p = argv_strsep(&str_p, tok);
+    tok_p = strsep(&str_p, tok);
     if (tok_p == NULL) {
       break;
     }
@@ -552,7 +356,7 @@ static	char	**vectorize(char *str, const char *tok, int *num_tok_p)
   /* load the tokens into the list */
   str_p = str;
   for (tok_c = 0; tok_c < tok_n;) {
-    tok_p = argv_strsep(&str_p, tok);
+    tok_p = strsep(&str_p, tok);
     if (tok_p == NULL) {
       break;
     }
@@ -3059,7 +2863,7 @@ static	int	process_env(void)
   env_p = environ_p;
   
   for (;;) {
-    tok_p = argv_strsep(&env_p, " \t,:");
+    tok_p = strsep(&env_p, " \t,:");
     if (tok_p == NULL) {
       break;
     }
@@ -3793,7 +3597,7 @@ int	argv_value_string(const argv_t *argv_entry_p, char *buf,
 const char	*argv_type_info(const unsigned int type, unsigned int *size_p,
 				const char **desc_p)
 {
-  int		val_type;
+  unsigned int	val_type;
   argv_type_t	*type_p;
   
   val_type = ARGV_TYPE(type);

@@ -1,0 +1,126 @@
+dnl
+dnl Process this file with autoconf to produce a configure script.
+dnl
+dnl NOTE: the beginning comments should be dnl'ed so we get the #!/bin/sh
+dnl       at the very top of the configure script.
+dnl
+dnl Copyright 1995 by Gray Watson
+dnl
+dnl This file is part of the null library.
+dnl
+dnl Permission to use, copy, modify, and distribute this software for
+dnl any purpose and without fee is hereby granted, provided that the
+dnl above copyright notice and this permission notice appear in all
+dnl copies, and that the name of Gray Watson not be used in advertising
+dnl or publicity pertaining to distribution of the document or software
+dnl without specific, written prior permission.
+dnl
+dnl Gray Watson makes no representations about the suitability of the
+dnl software described herein for any purpose.  It is provided "as is"
+dnl without express or implied warranty.
+dnl
+dnl The author may be contacted at gray.watson@letters.com
+dnl
+dnl $Id$
+dnl
+AC_REVISION($Revision$)dnl
+AC_INIT(null.c)
+AC_CONFIG_HEADER(conf.h)
+
+AC_CHECKING(configurations for the null library)
+
+##############################################################################
+AC_CHECKING(build utilities)
+
+AC_PROG_CC
+#Hopefully: ac_cc_ansi_flag macro
+AC_CACHE_CHECK("ANSI compiler flags", ac_cv_ansi_cc_flags,
+	ac_cv_ansi_cc_flags=""
+	AC_TRY_RUN([
+#if defined(__STDC__) && __STDC__ == 1
+main()
+{
+#endif	
+	exit(0);
+}
+	],[ ac_cv_ansi_cc_flags="none needed" ], [
+	XX_OLD_CFLAGS="$CFLAGS"
+	#
+	# Ultrix/OSF-1		-std1
+	# USL SV4		-Xc
+	# HPUX			-Aa
+	# AIX			-qlanglvl=ansi
+	#
+	for a in "-qlanglvl=ansi" "-std1" "-Xc" "-Aa"
+	do
+		CFLAGS="$XX_OLD_CFLAGS"
+		CFLAGS="$CFLAGS $a"
+		# NOTE: we must get a good compile from STDC else we
+		# can't tell if it failed from program or use of option
+		AC_TRY_RUN([
+#if defined(__STDC__) && __STDC__ == 1
+main()
+{
+#endif	
+	exit(0);
+}
+		],[
+			ac_cv_ansi_cc_flags="$a"
+			break
+		])
+	done
+	CFLAGS="$XX_OLD_CFLAGS"
+	])
+)
+if test "$ac_cv_ansi_cc_flags" = "unknown" ; then
+	AC_MSG_WARN()
+	AC_MSG_WARN(WARNING: no ansi compiler.  you may have to run 'make noansi')
+	AC_MSG_WARN()
+else
+	if test "$ac_cv_ansi_cc_flags" != "none needed" ; then
+		CC="$CC $ac_cv_ansi_cc_flags"
+	fi
+fi
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+AC_CONST
+AC_HEADER_STDC
+AC_CHECK_HEADERS(stdlib.h)
+if test "$ac_cv_header_stdlib_h" = "yes"; then
+	HAVE_STDLIB_H=1
+else
+	HAVE_STDLIB_H=0
+fi
+AC_SUBST(HAVE_STDLIB_H)
+AC_CHECK_HEADERS(string.h)
+if test "$ac_cv_header_string_h" = "yes"; then
+	HAVE_STRING_H=1
+else
+	HAVE_STRING_H=0
+fi
+AC_SUBST(HAVE_STRING_H)
+AC_CHECK_HEADERS(unistd.h)
+if test "$ac_cv_header_unistd_h" = "yes"; then
+	HAVE_UNISTD_H=1
+else
+	HAVE_UNISTD_H=0
+fi
+AC_SUBST(HAVE_UNISTD_H)
+
+##############################################################################
+AC_CHECKING(functions)
+
+# required
+AC_CHECK_FUNCS(atoi atol exit fclose fgets fopen fprintf fputc free fwrite)
+AC_CHECK_FUNCS(getenv malloc read realloc sprintf sscanf)
+
+# have compat functions
+AC_HAVE_FUNCS(strchr strcmp strcpy strlen strncmp strncpy strsep)
+
+##############################################################################
+AC_OUTPUT(Makefile)
+
+AC_MSG_WARN()
+AC_MSG_WARN(Please check-out Makefile and conf.h to make sure that)
+AC_MSG_WARN(sane configuration values were a result.)
+AC_MSG_WARN()

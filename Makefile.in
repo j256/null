@@ -1,4 +1,3 @@
-# Generated automatically from Makefile.in by configure.
 #
 # $Id$
 #
@@ -10,9 +9,9 @@ PORTFLS	= ChangeLog Makefile.all.in argv.[ch] argv_loc.h compat.[ch] \
 	conf.h.in configure configure.in install-sh md5.[ch] md5_loc.h \
 	mkinstalldirs null.c
 
-DEFS	= -DHAVE_STDLIB_H=1 \
-	-DHAVE_STRING_H=1 \
-	-DHAVE_UNISTD_H=1 \
+DEFS	= -DHAVE_STDLIB_H=@HAVE_STDLIB_H@ \
+	-DHAVE_STRING_H=@HAVE_STRING_H@ \
+	-DHAVE_UNISTD_H=@HAVE_UNISTD_H@ \
 	$(DEFINES)
 INCS	= -I. $(INCLUDES)
 LIBS	= $(LIBRARIES)

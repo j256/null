@@ -1,0 +1,76 @@
+/*
+ * Configuration defines
+ *
+ * Copyright 1995 by Gray Watson
+ *
+ * This file is part of the null library.
+ *
+ * Permission to use, copy, modify, and distribute this software for
+ * any purpose and without fee is hereby granted, provided that the
+ * above copyright notice and this permission notice appear in all
+ * copies, and that the name of Gray Watson not be used in advertising
+ * or publicity pertaining to distribution of the document or software
+ * without specific, written prior permission.
+ *
+ * Gray Watson makes no representations about the suitability of the
+ * software described herein for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * The author may be contacted at gray.watson@letters.com
+ *
+ * $Id$
+ */
+
+#ifndef __CONF_H__
+#define __CONF_H__
+
+/*
+ * should we include the RCS ids in the .c files and the installed
+ * library?
+ */
+#define INCLUDE_RCS_IDS 1
+
+/*
+ ************************************************************************
+ * CONFIGURE DEFINES:
+ ************************************************************************
+ */
+
+/*
+ * LIBRARY DEFINES:
+ */
+
+/*
+ * required functions
+ */
+#define HAVE_ATOI 0
+#define HAVE_ATOL 0
+#define HAVE_EXIT 0
+#define HAVE_FCLOSE 0
+#define HAVE_FGETS 0
+#define HAVE_FOPEN 0
+#define HAVE_FPRINTF 0
+#define HAVE_FPUTC 0
+#define HAVE_FREE 0
+#define HAVE_FWRITE 0
+#define HAVE_GETENV 0
+#define HAVE_MALLOC 0
+#define HAVE_READ 0
+#define HAVE_REALLOC 0
+#define HAVE_SPRINTF 0
+#define HAVE_SSCANF 0
+
+/*
+ * The compat library provides its own versions of the following
+ * functions,  or knows how to work around their absence.
+ */
+
+#define HAVE_STRCHR 0
+#define HAVE_STRCMP 0
+#define HAVE_STRCPY 0
+#define HAVE_STRLEN 0
+#define HAVE_STRNCMP 0
+#define HAVE_STRNCPY 0
+#define HAVE_STRSEP 0
+
+#endif /* ! __CONF_H__ */
