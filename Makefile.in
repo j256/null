@@ -5,7 +5,7 @@
 PROG	= null
 OBJS	= argv.o compat.o md5.o
 
-PORTFLS	= ChangeLog Makefile.all.in argv.[ch] argv_loc.h compat.[ch] \
+PORTFLS	= ChangeLog Makefile.all.in README argv.[ch] argv_loc.h compat.[ch] \
 	conf.h.in configure configure.in install-sh md5.[ch] md5_loc.h \
 	mkinstalldirs null.c
 
@@ -24,6 +24,10 @@ all :: $(PROG)
 clean ::
 	$(CLEAN)
 	rm -f $(PROG)
+
+distclean : clean
+	rm -f confdefs.h config.status config.log config.cache conf.h
+	rm -f Makefile configure
 
 install :: $(PROG)
 	install -cesv $(PROG) $(DESTDIR)
