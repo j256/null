@@ -20,8 +20,8 @@
 #define BUFFER_SIZE	100000			/* size of buffer */
 
 /* argument vars */
-static	int		buf_size = BUFFER_SIZE;	/* size of i/o buffer */
-static	int		dot_size = 0;		/* show a dot every X */
+static	long		buf_size = BUFFER_SIZE;	/* size of i/o buffer */
+static	long		dot_size = 0;		/* show a dot every X */
 static	int		flush_out_b = ARGV_FALSE; /* flush output to files */
 static	int		run_md5_b = ARGV_FALSE;	/* run md5 on data */
 static	int		non_block_b = ARGV_FALSE; /* don't block on input */
@@ -73,9 +73,9 @@ static	char	*byte_size(const int count)
 
 int	main(int argc, char **argv)
 {
-  unsigned int	pass_n, file_c, dot_c;
+  unsigned int	pass_n, file_c;
   unsigned long	inc = 0;
-  int		ret;
+  int		ret, dot_c;
   FILE		**streams = NULL;
   fd_set	listen_set;
   char		*buf, md5_result[MD5_SIZE], *md5_p;
