@@ -38,7 +38,7 @@ INSTALL_DATA = @INSTALL_DATA@
 ###############################################################################
 
 SHELL	= /bin/sh
-OBJS	= argv.o md5.o
+OBJS	= argv.o compat.o md5.o
 CFLAGS	= $(CCFLAGS)
 
 all : $(UTIL)

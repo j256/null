@@ -54,6 +54,7 @@ static	int		help_b = ARGV_FALSE;	/* get help */
 static	int		run_md5_b = ARGV_FALSE;	/* run md5 on data */
 static	int		non_block_b = ARGV_FALSE; /* don't block on input */
 static	int		pass_b = ARGV_FALSE;	/* pass data through */
+static	int		rate_every = 0;		/* rate every X secs */
 static	int		read_page_b = 0;	/* read pagination info */
 static	unsigned long	stop_after = 0;		/* stop after X bytes */
 static	unsigned long	throttle_size = 0;	/* throttle bytes/second */
@@ -84,6 +85,8 @@ static	argv_t	args[] = {
     NULL,			"write input to standard output" },
   { 'r',	"read-pagination", ARGV_BOOL_INT,		&read_page_b,
     NULL,			"read pagination data (use with -w)" },
+  { 'R',	"rate-every",	ARGV_INT,			&rate_every,
+    "seconds",			"dump rate info every X secs" },
   { 's',	"stop-after",	ARGV_U_SIZE,			&stop_after,
     "size",			"stop after size bytes" },
   { 't',	"throttle-size", ARGV_U_SIZE,			&throttle_size,
@@ -352,14 +355,15 @@ static	int	read_pagination(char *buf, const int buf_len,
 int	main(int argc, char **argv)
 {
   int			file_c, input_fd;
-  unsigned long		read_c = 0, write_c = 0, dot_c = 0, read_size;
+  unsigned long		read_c = 0, write_bytes_c = 0, dot_c = 0, read_size;
   unsigned long		buf_len, write_max, to_write, min_write = 0;
-  unsigned long		write_size;
+  unsigned long		write_size, write_c = 0, last_write_c = 0;
   int			read_n, ret, eof_b = 0, open_out_b = 1;
   FILE			**streams = NULL;
   fd_set		listen_set;
   char			*buf, md5_result[MD5_SIZE];
   md5_t			md5;
+  time_t		last_rate = 0;
   struct timeval	start, now, timeout;
   
   argv_help_string = "Null utility.  Also try --usage.";
@@ -656,20 +660,24 @@ int	main(int argc, char **argv)
 	(void)fprintf(stderr, "wrote %ld bytes\n", write_size);
       }
       
+      /* count the bytes */
+      write_bytes_c += write_size;
+      write_c++;
+      
       /*
-       * Print out our dots.  Because write_c might overflow and make
-       * our dot-loop will go infinite, we continually reset the dot
-       * sizes.
+       * Print out our dots.  Because write_bytes_c might overflow and
+       * make our dot-loop will go infinite, we continually reset the
+       * dot sizes.
        */
       if (dot_size > 0) {
-	write_c += write_size;
+	unsigned long	write_dot_c = write_bytes_c;
 	
-	while (dot_c + dot_size < write_c) {
+	while (dot_c + dot_size < write_bytes_c) {
 	  (void)fputc('.', stderr);
 	  dot_c += dot_size;
 	}
 	
-	write_c -= dot_c;
+	write_dot_c -= dot_c;
 	dot_c = 0;
       }
       
@@ -682,6 +690,31 @@ int	main(int argc, char **argv)
 	break;
       }
     }
+    
+    if (rate_every > 0) {
+      time_t		now_secs;
+      unsigned long	diff;
+      
+      now_secs = time(NULL);
+      if (last_rate == 0) {
+	last_rate = now_secs;
+      }
+      else if (last_rate + rate_every <= now_secs) {
+	diff = write_c - last_write_c;
+	diff *= buf_size;
+	(void)fprintf(stderr, "\rWrote %s", byte_size(diff));
+	if (rate_every > 1) {
+	  diff /= now_secs - last_rate;
+	  (void)fprintf(stderr, " or %s per sec", byte_size(diff));
+	}
+	last_rate = now_secs;
+	last_write_c = write_c;
+      }
+    }
+  }
+  
+  if (rate_every > 0) {
+    (void)fputc('\n', stderr);
   }
   
   if (write_page_b) {
