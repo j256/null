@@ -186,8 +186,10 @@ int	main(int argc, char **argv)
   
   /* write some report info */
   if (verbose_b) {
-    (void)fprintf(stderr, "%s: processed %s in %d secs or %s/sec\n",
-		  argv_program, byte_size(inc), (int)diff,
+    (void)fprintf(stderr, "%s: processed %s in %d secs",
+		  argv_program, byte_size(inc), (int)diff);
+    /* NOTE: this needs to be in a separate printf */
+    (void)fprintf(stderr, " or %s/sec\n",
 		  (diff == 0 ? byte_size(inc) : byte_size(inc / diff)));
   }
   
