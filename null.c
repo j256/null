@@ -33,7 +33,7 @@ static  char    *ident_str =
   "$Id$";
 #endif
 
-static	char	*null_version = "1.0.0";
+static	char	*null_version = "$NullVersion: 1.0.0 March 7, 2000";
 
 #define BUFFER_SIZE	100000		/* size of buffer */
 #define WRITES_PER_SEC	10		/* throttle to X writes/sec.  X > 1. */
@@ -361,11 +361,11 @@ int	main(int argc, char **argv)
   }
   
   if (help_b) {
-    (void)fprintf(stderr, "Null Utility: http://256.com/sources/\n");
+    (void)fprintf(stderr, "Null Utility: http://256.com/sources/null/\n");
     (void)fprintf(stderr,
                   "  This utility combines the functionality of /dev/null,\n");
     (void)fprintf(stderr,
-                  "  tee, and md5sm with additional features.\n");
+                  "  tee, and md5sum with additional features.\n");
     (void)fprintf(stderr,
 		  "  For a list of the command-line options enter: %s --usage\n",
                   argv_argv[0]);
