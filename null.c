@@ -40,7 +40,7 @@ static	argv_t	args[] = {
   { 'F',	"flush-output",	ARGV_BOOL_INT,			&flush_out_b,
     NULL,			"flush output to files" },
   { 'm',	"md5",		ARGV_BOOL_INT,			&run_md5_b,
-    NULL,			"don't block on input" },
+    NULL,			"run input bytes through md5" },
   { 'n',	"non-block",	ARGV_BOOL_INT,			&non_block_b,
     NULL,			"don't block on input" },
   { 'p',	"pass-input",	ARGV_BOOL_INT,			&pass_b,
