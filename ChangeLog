@@ -1,22 +1,26 @@
-Sat Feb 24 13:20:43 2001  Gray Watson  <gray@whopper.be.256.com>
+2002-10-14  Gray Watson  <gray@outside.256.com>
+
+	* Fixed a bad throttle spin which ate a CPU.  Ugh.
+
+2001-02-24  Gray Watson  <gray@whopper.be.256.com>
 
 	* Added --inpit-file.
 
 	* Added --stop-after argument.
 
-Tue Mar  7 11:44:05 2000  Gray Watson  <gray@burger.256.com>
+2000-03-07  Gray Watson  <gray@burger.256.com>
 
 	* Turning into a real package.
 
 	* Added pagination and fixed the md5 code.  Been wanting this for
- 	a while.
+	a while.
 
-Mon Mar  6 19:17:47 2000  Gray Watson  <gray@burger.256.com>
+20000306  Gray Watson  <gray@burger.256.com>
 
 	* Fixed the throttling code which was majorly broken.
 
 	* Fixed dot overflow problems.
 
-Tue May 18 17:33:23 1999  Gray Watson  <gray@burger.256.com>
+19990518  Gray Watson  <gray@burger.256.com>
 
 	* Added -t (--throttle) command to null.

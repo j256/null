@@ -16,7 +16,7 @@ DEFS	= -DHAVE_STDLIB_H=@HAVE_STDLIB_H@ \
 INCS	= -I. $(INCLUDES)
 LIBS	= $(LIBRARIES)
 
-CFLAGS	= $(CCFLAGS)
+CFLAGS	= -O2 $(CCFLAGS)
 DESTDIR	= /usr/local/bin
 
 all :: $(PROG)

@@ -350,7 +350,8 @@ int	main(int argc, char **argv)
 {
   int			file_c, input_fd;
   unsigned long		read_c = 0, write_c = 0, dot_c = 0, read_size;
-  unsigned long		buf_len, write_max, write_size, to_write;
+  unsigned long		buf_len, write_max, to_write, min_write = 0;
+  unsigned long		write_size;
   int			read_n, ret, eof_b = 0;
   FILE			**streams = NULL;
   fd_set		listen_set;
@@ -438,6 +439,11 @@ int	main(int argc, char **argv)
     if (very_verbose_b) {
       (void)fprintf(stderr, "wrote starting pagination\n");
     }
+  }
+  
+  if (throttle_size > 0) {
+    /* if we sleep for 1/X of a second so write 1/X of throttle-size */
+    min_write = throttle_size / WRITES_PER_SEC;
   }
   
   /* read in stuff and count the number */
@@ -548,8 +554,21 @@ int	main(int argc, char **argv)
       write_max = (float)throttle_size *
 	((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
       
-      /* have we read too much? */
-      if (read_c > write_max) {
+      /* figure out what we need to write to get the rate correct */
+      if (write_max > read_c) {
+	/* we need to read more */
+	write_size = write_max - read_c;
+      }
+      else {
+	/* we've read enough or are ahead so sleep */
+	write_size = 0;
+      }
+      
+      /*
+       * If we are about to write some small amount then sleep and
+       * write a larger amount
+       */
+      if (write_size < min_write) {
 	/*
 	 * Since we've read enough, we need to take our time with the
 	 * write.  Just sleep for a certain amount of time and write
@@ -559,13 +578,11 @@ int	main(int argc, char **argv)
 	timeout.tv_usec = 1000000 / WRITES_PER_SEC;
 	(void)select(0, NULL, NULL, NULL, &timeout);
 	
-	/* if we sleep for 1/X of a second so write 1/X of throttle-size */
-	write_size = throttle_size / WRITES_PER_SEC;
-      }
-      else {
-	write_size = write_max - read_c;
+	/* write our minimal chunk */
+	write_size = min_write;
       }
       
+      /* make sure that we have enough in our buffer to write */
       if (write_size > to_write) {
 	write_size = to_write;
       }
