@@ -46,6 +46,7 @@ static	char	*null_version = "$NullVersion: 1.0.0 March 7, 2000";
 #define PAGINATION_END		'e'	/* end character */
 
 /* argument vars */
+static	int		read_all_b = ARGV_FALSE; /* read input in before out */
 static	unsigned long	buf_size = BUFFER_SIZE;	/* size of i/o buffer */
 static	unsigned long	dot_size = 0;		/* show a dot every X */
 static	int		flush_out_b = ARGV_FALSE; /* flush output to files */
@@ -63,6 +64,8 @@ static	char		*input_path = NULL;	/* input file we are reading */
 static	argv_array_t	outfiles;		/* outfiles for read data */
 
 static	argv_t	args[] = {
+  { 'a',	"all-read",	ARGV_BOOL_INT,			&read_all_b,
+    NULL,			"real all input before outputting" },
   { 'b',	"buffer-size",	ARGV_U_SIZE,			&buf_size,
     "size",			"size of input and output buffer" },
   { 'd',	"dot-blocks",	ARGV_U_SIZE,			&dot_size,
@@ -352,7 +355,7 @@ int	main(int argc, char **argv)
   unsigned long		read_c = 0, write_c = 0, dot_c = 0, read_size;
   unsigned long		buf_len, write_max, to_write, min_write = 0;
   unsigned long		write_size;
-  int			read_n, ret, eof_b = 0;
+  int			read_n, ret, eof_b = 0, open_out_b = 1;
   FILE			**streams = NULL;
   fd_set		listen_set;
   char			*buf, md5_result[MD5_SIZE];
@@ -408,24 +411,19 @@ int	main(int argc, char **argv)
     streams = NULL;
   }
   else {
-    streams = (FILE **)malloc(sizeof(FILE *) * outfiles.aa_entry_n);
+    streams = (FILE **)calloc(outfiles.aa_entry_n, sizeof(FILE *));
     if (streams == NULL) {
       perror("malloc");
       exit(1);
     }
-    
-    for (file_c = 0; file_c < outfiles.aa_entry_n; file_c++) {
-      char	*path = ARGV_ARRAY_ENTRY(outfiles, char *, file_c);
-      
-      streams[file_c] = fopen(path, "w");
-      if (streams[file_c] == NULL) {
-	(void)fprintf(stderr, "%s: cannot fopen(%s): %s\n", 
-		      argv_program, path, strerror(errno));
-      }
-    }
   }
   
   buf = (char *)malloc(buf_size);
+  if (buf == NULL) {
+    (void)fprintf(stderr, "could not allocate %ld bytes for buffer\n",
+		  buf_size);
+    exit(1);
+  }
   
   if (run_md5_b) {
     md5_init(&md5);
@@ -505,6 +503,23 @@ int	main(int argc, char **argv)
 	  }
 	  else {
 	    to_write = buf_len;
+	  }
+	  
+	  /*
+	   * if we are reading all of the input before we output then
+	   * we'll have to grow the input buffer
+	   */
+	  if (read_all_b) {
+	    /* grow our input buffer */
+	    buf = realloc(buf, buf_size + buf_len);
+	    if (buf == NULL) {
+	      (void)fprintf(stderr,
+			    "could not reallocate %ld bytes for buffer\n",
+			    buf_size + buf_len);
+	      exit(1);
+	    }
+	    /* we'll write when we reach the EOF */
+	    to_write = 0;
 	  }
 	}
 	else {
@@ -614,6 +629,16 @@ int	main(int argc, char **argv)
       
       /* write out to any files */
       for (file_c = 0; file_c < outfiles.aa_entry_n; file_c++) {
+	if (open_out_b) {
+	  char	*path = ARGV_ARRAY_ENTRY(outfiles, char *, file_c);
+	  
+	  streams[file_c] = fopen(path, "w");
+	  if (streams[file_c] == NULL) {
+	    (void)fprintf(stderr, "%s: cannot fopen(%s): %s\n", 
+			  argv_program, path, strerror(errno));
+	  }
+	}
+	
 	if (streams[file_c] != NULL) {
 	  (void)fwrite(buf, sizeof(char), write_size, streams[file_c]);
 	  if (flush_out_b) {
@@ -621,6 +646,7 @@ int	main(int argc, char **argv)
 	  }
 	}
       }
+      open_out_b = 0;
       
       if (very_verbose_b) {
 	(void)fprintf(stderr, "wrote %ld bytes\n", write_size);

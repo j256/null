@@ -1,3 +1,7 @@
+2002-11-12  Gray Watson  <gray@outside.256.com>
+
+	* Added -a --all-read flag.
+
 2002-10-14  Gray Watson  <gray@outside.256.com>
 
 	* Fixed a bad throttle spin which ate a CPU.  Ugh.
