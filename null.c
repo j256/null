@@ -693,15 +693,10 @@ int	main(int argc, char **argv)
        * dot sizes.
        */
       if (dot_size > 0) {
-	unsigned long	write_dot_c = write_bytes_c;
-	
 	while (dot_c + dot_size < write_bytes_c) {
 	  (void)fputc('.', stderr);
 	  dot_c += dot_size;
 	}
-	
-	write_dot_c -= dot_c;
-	dot_c = 0;
       }
       
       /* do we need to shift the buffer down? */
