@@ -6,3 +6,5 @@ config.cache
 config.status
 conf.h
 Makefile
+autom4te.cache
+configure.lineno
