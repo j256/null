@@ -227,7 +227,7 @@ static	argv_type_t	argv_types[] = {
     "if option used, set integer variable to 0" },
   { ARGV_BOOL_INT_ARG,	"integer boolean",	sizeof(int),
     "like boolean but with an argument, true/yes/1 sets integer var to 1" },
-  { 0 }
+  { 0, NULL, 0, NULL }
 };
 
 #endif /* ! __ARGV_LOC_H__ */

@@ -93,7 +93,7 @@ static	argv_t	args[] = {
     NULL,			"write paginate data (use with -r)" },
   { ARGV_MAYBE,	"input-file",	ARGV_CHAR_P,			&input_path,
     "file",			"file we are reading else stdin" },
-  { ARGV_LAST }
+  { ARGV_LAST, NULL, 0, NULL, NULL, NULL }
 };
 
 /*

@@ -85,8 +85,12 @@ int 	argv_interactive = ARGV_TRUE;
  */
 FILE 	*argv_error_stream = ERROR_STREAM_INIT;
 
-/* local variables */
-static	argv_t	empty[] = {{ ARGV_LAST }};	/* empty argument array */
+/*
+ * local variables
+ */
+
+/* empty argument array */
+static	argv_t	empty[] = {{ ARGV_LAST, NULL, 0, NULL, NULL, NULL }};
 static	int	enabled_b = ARGV_FALSE;		/* are the lights on? */
 
 /* global settings */
