@@ -22,12 +22,12 @@
 /* argument vars */
 static	int		buf_size = BUFFER_SIZE;	/* size of i/o buffer */
 static	int		dot_size = 0;		/* show a dot every X */
-static	char		flush_out = ARGV_FALSE;	/* flush output to files */
-static	char		run_md5	= ARGV_FALSE;	/* run md5 on data */
-static	char		non_block = ARGV_FALSE;	/* don't block on input */
-static	char		pass	= ARGV_FALSE;	/* pass data through */
-static	char		verbose	= ARGV_FALSE;	/* verbose flag */
-static	char		very_verbose = ARGV_FALSE; /* very-verbose flag */
+static	int		flush_out_b = ARGV_FALSE; /* flush output to files */
+static	int		run_md5_b = ARGV_FALSE;	/* run md5 on data */
+static	int		non_block_b = ARGV_FALSE; /* don't block on input */
+static	int		pass_b = ARGV_FALSE;	/* pass data through */
+static	int		verbose_b = ARGV_FALSE;	/* verbose flag */
+static	int		very_verbose_b = ARGV_FALSE; /* very-verbose flag */
 static	argv_array_t	outfiles;		/* outfiles for read data */
 
 static	argv_t	args[] = {
@@ -35,19 +35,19 @@ static	argv_t	args[] = {
       "size",			"size of input output buffer" },
   { 'd',	"dot-blocks",	ARGV_SIZE,			&dot_size,
       "size",			"show a dot each X bytes of input" },
-  { 'f',	"output-file",	ARGV_CHAR_P | ARGV_ARRAY,	&outfiles,
+  { 'f',	"output-file",	ARGV_CHAR_P | ARGV_FLAG_ARRAY,	&outfiles,
       "output-file",		"output file to write input" },
-  { 'F',	"flush-output",	ARGV_BOOL,			&flush_out,
+  { 'F',	"flush-output",	ARGV_BOOL_INT,			&flush_out_b,
       NULL,			"flush output to files" },
-  { 'm',	"md5",		ARGV_BOOL,			&run_md5,
+  { 'm',	"md5",		ARGV_BOOL_INT,			&run_md5_b,
       NULL,			"don't block on input" },
-  { 'n',	"non-block",	ARGV_BOOL,			&non_block,
+  { 'n',	"non-block",	ARGV_BOOL_INT,			&non_block_b,
       NULL,			"don't block on input" },
-  { 'p',	"pass-input",	ARGV_BOOL,			&pass,
+  { 'p',	"pass-input",	ARGV_BOOL_INT,			&pass_b,
       NULL,			"pass input data to output" },
-  { 'v',	"verbose",	ARGV_BOOL,			&verbose,
+  { 'v',	"verbose",	ARGV_BOOL_INT,			&verbose_b,
       NULL,			"report on i/o bytes" },
-  { 'V',	"very-verbose",	ARGV_BOOL,			&very_verbose,
+  { 'V',	"very-verbose",	ARGV_BOOL_INT,		       &very_verbose_b,
       NULL,			"very verbose messages" },
   { ARGV_LAST }
 };
@@ -82,21 +82,24 @@ int	main(int argc, char **argv)
   time_t	now, diff;
   
   argv_process(args, argc, argv);
-  if (very_verbose)
-    verbose = 1;
+  if (very_verbose_b) {
+    verbose_b = 1;
+  }
   
   /* open output paths if needed -- we add one to accomodate stdout */
-  if (pass)
+  if (pass_b) {
     pass_n = 1;
-  else
+  }
+  else {
     pass_n = 0;
+  }
   streams = (FILE **)malloc(sizeof(FILE *) * (outfiles.aa_entry_n + pass_n));
-  if (pass) {
+  if (pass_b) {
     streams[0] = stdout;
   }
   
   /* make stdin non-blocking */
-  if (non_block) {
+  if (non_block_b) {
     (void)fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) | O_NONBLOCK);
   }
   
@@ -114,8 +117,9 @@ int	main(int argc, char **argv)
   
   buf = (char *)malloc(buf_size);
   
-  if (run_md5)
+  if (run_md5_b) {
     md5_init(&md5);
+  }
   
   now = time(NULL);
   
@@ -123,7 +127,7 @@ int	main(int argc, char **argv)
   dot_c = dot_size;
   for (;;) {
     
-    if (non_block) {
+    if (non_block_b) {
       FD_ZERO(&listen_set);
       FD_SET(0, &listen_set);
       ret = select(1, &listen_set, NULL, NULL, NULL);
@@ -148,10 +152,10 @@ int	main(int argc, char **argv)
     }
     inc += ret;
     
-    if (very_verbose) {
+    if (very_verbose_b) {
       (void)fprintf(stderr, "Read %d bytes\n", ret);
     }
-    if (run_md5) {
+    if (run_md5_b) {
       md5_process_bytes(&md5, buf, ret);
     }
     
@@ -167,7 +171,7 @@ int	main(int argc, char **argv)
     for (file_c = 0; file_c < outfiles.aa_entry_n + pass_n; file_c++) {
       if (streams[file_c] != NULL) {
 	(void)fwrite(buf, sizeof(char), ret, streams[file_c]);
-	if (flush_out) {
+	if (flush_out_b) {
 	  (void)fflush(streams[file_c]);
 	}
       }
@@ -181,13 +185,13 @@ int	main(int argc, char **argv)
   }
   
   /* write some report info */
-  if (verbose) {
+  if (verbose_b) {
     (void)fprintf(stderr, "%s: processed %s in %d secs or %s/sec\n",
 		  argv_program, byte_size(inc), (int)diff,
 		  (diff == 0 ? byte_size(inc) : byte_size(inc / diff)));
   }
   
-  if (run_md5) {
+  if (run_md5_b) {
     md5_finish(&md5, md5_result);
     (void)fprintf(stderr, "%s: md5 signature of input = '", argv_program);
     for (md5_p = md5_result; md5_p < md5_result + MD5_SIZE; md5_p++) {
