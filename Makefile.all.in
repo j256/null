@@ -37,8 +37,7 @@ INSTALL_DATA = @INSTALL_DATA@
 # End of system configuration section.
 ###############################################################################
 
-SHELL = /bin/sh
-
+SHELL	= /bin/sh
 OBJS	= argv.o md5.o
 CFLAGS	= $(CCFLAGS)
 
