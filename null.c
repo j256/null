@@ -32,23 +32,23 @@ static	argv_array_t	outfiles;		/* outfiles for read data */
 
 static	argv_t	args[] = {
   { 'b',	"buffer-size",	ARGV_SIZE,			&buf_size,
-      "size",			"size of input output buffer" },
+    "size",			"size of input output buffer" },
   { 'd',	"dot-blocks",	ARGV_SIZE,			&dot_size,
-      "size",			"show a dot each X bytes of input" },
+    "size",			"show a dot each X bytes of input" },
   { 'f',	"output-file",	ARGV_CHAR_P | ARGV_FLAG_ARRAY,	&outfiles,
-      "output-file",		"output file to write input" },
+    "output-file",		"output file to write input" },
   { 'F',	"flush-output",	ARGV_BOOL_INT,			&flush_out_b,
-      NULL,			"flush output to files" },
+    NULL,			"flush output to files" },
   { 'm',	"md5",		ARGV_BOOL_INT,			&run_md5_b,
-      NULL,			"don't block on input" },
+    NULL,			"don't block on input" },
   { 'n',	"non-block",	ARGV_BOOL_INT,			&non_block_b,
-      NULL,			"don't block on input" },
+    NULL,			"don't block on input" },
   { 'p',	"pass-input",	ARGV_BOOL_INT,			&pass_b,
-      NULL,			"pass input data to output" },
+    NULL,			"pass input data to output" },
   { 'v',	"verbose",	ARGV_BOOL_INT,			&verbose_b,
-      NULL,			"report on i/o bytes" },
+    NULL,			"report on i/o bytes" },
   { 'V',	"very-verbose",	ARGV_BOOL_INT,		       &very_verbose_b,
-      NULL,			"very verbose messages" },
+    NULL,			"very verbose messages" },
   { ARGV_LAST }
 };
 
@@ -156,7 +156,7 @@ int	main(int argc, char **argv)
       (void)fprintf(stderr, "Read %d bytes\n", ret);
     }
     if (run_md5_b) {
-      md5_process_bytes(&md5, buf, ret);
+      md5_process(&md5, buf, ret);
     }
     
     if (dot_size > 0) {
