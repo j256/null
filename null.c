@@ -58,11 +58,11 @@ static	char	*byte_size(const int count)
   static char	buf[80];
   
   if (count > 1024 * 1024) {
-    (void)sprintf(buf, "%d bytes (%.1fmb)",
+    (void)sprintf(buf, "%d bytes (%.1fm)",
 		  count, (float)(count) / (float)(1024 * 1024));
   }
   else if (count > 1024) {
-    (void)sprintf(buf, "%d bytes (%.1fkb)", count, (float)count / 1024.0);
+    (void)sprintf(buf, "%d bytes (%.1fk)", count, (float)count / 1024.0);
   }
   else {
     (void)sprintf(buf, "%d byte%s", count, (count == 1 ? "" : "s"));
