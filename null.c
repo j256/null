@@ -165,6 +165,7 @@ static	int	write_pagination(const char *buf, const int buf_len,
 				 const int last_b)
 {
   const char	*buf_p, *bounds_p, *write_p = buf;
+  unsigned int	write_len;
   int		len;
   
   len = strlen(PAGINATION_ESC);
@@ -184,9 +185,15 @@ static	int	write_pagination(const char *buf, const int buf_len,
      * input contained a pagination escape by mistake.
      */
     buf_p += len;
-    (void)fwrite(write_p, sizeof(char), buf_p - write_p, stdout);
+    write_len = buf_p - write_p;
+    if (fwrite(write_p, sizeof(char), write_len, stdout) != write_len) {
+      (void)fprintf(stderr,
+		    "%s: ERROR.  Could not write full pagination block.\n",
+		    argv_program);
+      exit(1);
+    }
     if (very_verbose_b) {
-      (void)fprintf(stderr, " wrote %d paged chars\n", buf_p - write_p);
+      (void)fprintf(stderr, " wrote %d paged chars\n", write_len);
     }
     (void)fputc(PAGINATION_MID, stdout);
     if (very_verbose_b) {
@@ -209,7 +216,12 @@ static	int	write_pagination(const char *buf, const int buf_len,
   
   len = buf_p - write_p;
   if (len > 0) {
-    (void)fwrite(write_p, sizeof(char), len, stdout);
+    if (fwrite(write_p, sizeof(char), len, stdout) != (size_t)len) {
+      (void)fprintf(stderr,
+		    "%s: ERROR.  Could not write partial pagination block.\n",
+		    argv_program);
+      exit(1);
+    }
     if (very_verbose_b) {
       (void)fprintf(stderr, " wrote %d paged chars\n", len);
     }
@@ -624,7 +636,12 @@ int	main(int argc, char **argv)
 	  }
 	}
 	else {
-	  (void)fwrite(buf, sizeof(char), write_size, stdout);
+	  if (fwrite(buf, sizeof(char), write_size, stdout) != write_size) {
+	    (void)fprintf(stderr,
+			  "%s: ERROR.  Could not pass block to stdout.\n",
+			  argv_program);
+	    exit(1);
+	  }
 	}
 	if (flush_out_b) {
 	  (void)fflush(stdout);
@@ -648,7 +665,13 @@ int	main(int argc, char **argv)
 	}
 	
 	if (streams[file_c] != NULL) {
-	  (void)fwrite(buf, sizeof(char), write_size, streams[file_c]);
+	  if (fwrite(buf, sizeof(char), write_size,
+		     streams[file_c]) != write_size) {
+	    (void)fprintf(stderr,
+			  "%s: ERROR.  Could not write block to file.\n",
+			  argv_program);
+	    exit(1);
+	  }
 	  if (flush_out_b) {
 	    (void)fflush(streams[file_c]);
 	  }
@@ -701,12 +724,9 @@ int	main(int argc, char **argv)
       }
       else if (last_rate + rate_every <= now_secs) {
 	diff = write_c - last_write_c;
-	diff *= buf_size;
-	(void)fprintf(stderr, "\rWrote %s", byte_size(diff));
-	if (rate_every > 1) {
-	  diff /= now_secs - last_rate;
-	  (void)fprintf(stderr, " or %s per sec", byte_size(diff));
-	}
+	diff = diff * buf_size / (now_secs - last_rate);
+	(void)fprintf(stderr, "\rWrote %ld blks at %s per sec      ",
+		      write_c, byte_size(diff));
 	last_rate = now_secs;
 	last_write_c = write_c;
       }
