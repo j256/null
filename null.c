@@ -18,6 +18,13 @@
 #include "argv.h"
 #include "md5.h"
 
+#ifdef __GNUC__
+#ident "$Id$";
+#else
+static  char    *ident_str =
+  "$Id$";
+#endif
+
 #define BUFFER_SIZE	100000		/* size of buffer */
 #define WRITES_PER_SEC	10		/* throttle to X writes/sec.  X > 1. */
 #define PASS_CHAR	'p'		/* pass - argument */
