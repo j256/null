@@ -21,6 +21,8 @@
 #define BUFFER_SIZE	100000		/* size of buffer */
 #define WRITES_PER_SEC	10		/* throttle to X writes/sec.  X > 1. */
 #define PASS_CHAR	'p'		/* pass - argument */
+#define STDIN_FD	0		/* stdin file descriptor */
+
 #define PAGINATION_ESC	"null-page-"	/* special pagination string */
 #define PAGINATION_START	's'	/* start character */
 #define PAGINATION_MID		'm'	/* mid character */
@@ -248,7 +250,7 @@ static	int	read_pagination(char *buf, const int buf_len,
     }
     
     /* shift the buffer down over the start sequence */
-    memmove(buf, buf + len + 1, buf_len - len - 1);
+    memmove(buf, buf + len + 1, buf_len - (len + 1));
     bounds_p -= len + 1;
     
     if (very_verbose_b) {
@@ -268,11 +270,11 @@ static	int	read_pagination(char *buf, const int buf_len,
       continue;
     }
     
-    /* just skip over starting sequence */
+    /* just skip a mid sequence */
     if (buf_p[len] == 'm') {
       buf_p += len;
       /* shift down over the mid sequence */
-      memmove(buf_p, buf_p + 1, bounds_p - buf_p - 1);
+      memmove(buf_p, buf_p + 1, bounds_p - (buf_p + 1));
       bounds_p--;
       if (very_verbose_b) {
 	(void)fprintf(stderr, " trimmed 1 byte of mid pagination\n");
@@ -314,6 +316,7 @@ static	int	read_pagination(char *buf, const int buf_len,
   }
   
   *to_write_p = buf_p - buf;
+  
   return bounds_p - buf;
 }
 
@@ -388,7 +391,10 @@ int	main(int argc, char **argv)
   buf_len = 0;
   while (1) {
     
-    if (! eof_b) {
+    if (eof_b) {
+      to_write = buf_len;
+    }
+    else {
       if (non_block_b) {
 	FD_ZERO(&listen_set);
 	FD_SET(0, &listen_set);
@@ -405,10 +411,12 @@ int	main(int argc, char **argv)
       
       /* read in data from input stream */
       if (buf_size <= buf_len) {
+	/* we've already processed the buffer so we don't need to paginate */
 	to_write = buf_len;
       }
       else {
-	read_n = read(0, buf + buf_len, buf_size - buf_len);
+	/* read from standard-in */
+	read_n = read(STDIN_FD, buf + buf_len, buf_size - buf_len);
 	if (read_n < 0) {
 	  (void)fprintf(stderr, "%s: read on stdin error: %s\n",
 			argv_program, strerror(errno));
@@ -430,9 +438,10 @@ int	main(int argc, char **argv)
 	  }
 	}
 	else {
-	  /* read_n == 0 */
+	  /* EOF on read */
 	  
 	  if (read_page_b) {
+	    /* we do this here so it can error because of no end tag */
 	    buf_len = read_pagination(buf, buf_len, &to_write, 1);
 	  }
 	  else {
