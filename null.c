@@ -27,7 +27,7 @@
 #include "md5.h"
 
 #ifdef __GNUC__
-#ident "$Id$";
+#ident "$Id$"
 #else
 static  char    *ident_str =
   "$Id$";
@@ -54,6 +54,7 @@ static	int		run_md5_b = ARGV_FALSE;	/* run md5 on data */
 static	int		non_block_b = ARGV_FALSE; /* don't block on input */
 static	int		pass_b = ARGV_FALSE;	/* pass data through */
 static	int		read_page_b = 0;	/* read pagination info */
+static	unsigned long	stop_after = 0;		/* stop after X bytes */
 static	unsigned long	throttle_size = 0;	/* throttle bytes/second */
 static	int		verbose_b = ARGV_FALSE;	/* verbose flag */
 static	int		very_verbose_b = ARGV_FALSE; /* very-verbose flag */
@@ -79,6 +80,8 @@ static	argv_t	args[] = {
     NULL,			"write input to standard output" },
   { 'r',	"read-pagination", ARGV_BOOL_INT,		&read_page_b,
     NULL,			"read pagination data (use with -w)" },
+  { 's',	"stop-after",	ARGV_U_SIZE,			&stop_after,
+    "size",			"stop after size bytes" },
   { 't',	"throttle-size", ARGV_U_SIZE,			&throttle_size,
     "size",			"throttle output to X bytes / sec" },
   { 'v',	"verbose",	ARGV_BOOL_INT,			&verbose_b,
@@ -343,7 +346,7 @@ static	int	read_pagination(char *buf, const int buf_len,
 int	main(int argc, char **argv)
 {
   int			file_c;
-  unsigned long		read_c = 0, write_c = 0, dot_c = 0;
+  unsigned long		read_c = 0, write_c = 0, dot_c = 0, read_size;
   unsigned long		buf_len, write_max, write_size, to_write;
   int			read_n, ret, eof_b = 0;
   FILE			**streams = NULL;
@@ -450,8 +453,13 @@ int	main(int argc, char **argv)
 	to_write = buf_len;
       }
       else {
+	read_size = buf_size - buf_len;
+	if (stop_after > 0 && stop_after - read_c < read_size) {
+	  read_size = stop_after - read_c;
+	}
+	
 	/* read from standard-in */
-	read_n = read(STDIN_FD, buf + buf_len, buf_size - buf_len);
+	read_n = read(STDIN_FD, buf + buf_len, read_size);
 	if (read_n < 0) {
 	  (void)fprintf(stderr, "%s: read on stdin error: %s\n",
 			argv_program, strerror(errno));
@@ -464,6 +472,12 @@ int	main(int argc, char **argv)
 	  
 	  read_c += read_n;
 	  buf_len += read_n;
+	  
+	  /* are we stopping after X bytes */
+	  if (stop_after > 0 && read_c >= stop_after) {
+	    /* force the eof to be on */
+	    eof_b = 1;
+	  }
 	  
 	  if (read_page_b) {
 	    buf_len = read_pagination(buf, buf_len, &to_write, 0);
