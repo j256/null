@@ -1,7 +1,7 @@
 /*
  * /dev/null program
  *
- * Copyright 1991 by the Antaire Corporation
+ * Copyright 1995 by Gray Watson
  *
  * $Id$
  */

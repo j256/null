@@ -2,12 +2,13 @@
 # $Id$
 #
 
+PROG	= null
+
 INCS	= -I. -I/usr/local/inc $(INCLUDES)
 LIBS	= -L/usr/local/lib -largv $(LIBRARIES)
 
 CFLAGS	= $(CCFLAGS)
-DESTDIR	= /usr/local/local/sbin
-PROG	= null
+DESTDIR	= /usr/local/local/bin
 
 all :: $(PROG)
 
@@ -16,7 +17,7 @@ clean ::
 	rm -f $(PROG)
 
 install :: $(PROG)
-	install -cevR $(PROG) $(DESTDIR)
+	install -cesv $(PROG) $(DESTDIR)
 
 $(PROG) : $(PROG).o
 	rm -f $@
