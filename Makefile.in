@@ -30,7 +30,7 @@ distclean : clean
 	rm -f Makefile configure
 
 install :: $(PROG)
-	install -cesv $(PROG) $(DESTDIR)
+	install -cCv $(PROG) $(DESTDIR)
 
 $(PROG) : $(PROG).o $(OBJS)
 	rm -f $@

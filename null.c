@@ -384,7 +384,8 @@ int	main(int argc, char **argv)
   
   if (write_page_b && (! pass_b)) {
     (void)fprintf(stderr,
-		  "%s: disabling write pagination since no pass data (-%c)\n",
+		  "%s: disabling write pagination since pass data flag (-%c) "
+		  "disabled\n",
 		  argv_program, PASS_CHAR);
     write_page_b = 0;
   }
@@ -510,13 +511,16 @@ int	main(int argc, char **argv)
 	   * we'll have to grow the input buffer
 	   */
 	  if (read_all_b) {
-	    /* grow our input buffer */
-	    buf = realloc(buf, buf_size + buf_len);
-	    if (buf == NULL) {
-	      (void)fprintf(stderr,
-			    "could not reallocate %ld bytes for buffer\n",
-			    buf_size + buf_len);
-	      exit(1);
+	    if (buf_len == buf_size) {
+	      /* grow our input buffer */
+	      buf = realloc(buf, buf_size + buf_len);
+	      if (buf == NULL) {
+		(void)fprintf(stderr,
+			      "could not reallocate %ld bytes for buffer\n",
+			      buf_size + buf_len);
+		exit(1);
+	      }
+	      buf_size += buf_len;
 	    }
 	    /* we'll write when we reach the EOF */
 	    to_write = 0;
