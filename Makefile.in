@@ -17,7 +17,7 @@ INCS	= -I. $(INCLUDES)
 LIBS	= $(LIBRARIES)
 
 CFLAGS	= $(CCFLAGS)
-DESTDIR	= /usr/local/local/bin
+DESTDIR	= /usr/local/bin
 
 all :: $(PROG)
 
