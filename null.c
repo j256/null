@@ -1,7 +1,7 @@
 /*
  * /dev/null program
  *
- * Copyright 1995, 1996, 1997 by Gray Watson
+ * Copyright 2000 by Gray Watson
  *
  * $Id$
  */
@@ -18,7 +18,8 @@
 #include "argv.h"
 #include "md5.h"
 
-#define BUFFER_SIZE	100000			/* size of buffer */
+#define BUFFER_SIZE		100000	/* size of buffer */
+#define WRITES_PER_SEC		10	/* throttle to X writes/sec.  X > 1. */
 
 /* argument vars */
 static	unsigned long	buf_size = BUFFER_SIZE;	/* size of i/o buffer */
@@ -80,12 +81,12 @@ int	main(int argc, char **argv)
   unsigned int		pass_n, file_c;
   unsigned long		read_c = 0, write_c = 0, dot_c = 0;
   unsigned long		buf_len, write_max, write_size;
-  int			last_read_n, ret;
+  int			last_read_n, ret, eof_b = 0;
   FILE			**streams = NULL;
   fd_set		listen_set;
   char			*buf, md5_result[MD5_SIZE], *md5_p;
   md5_t			md5;
-  struct timeval	start, now;
+  struct timeval	start, now, timeout;
   
   argv_process(args, argc, argv);
   if (very_verbose_b) {
@@ -100,6 +101,10 @@ int	main(int argc, char **argv)
     pass_n = 0;
   }
   streams = (FILE **)malloc(sizeof(FILE *) * (outfiles.aa_entry_n + pass_n));
+  if (streams == NULL) {
+    perror("malloc");
+    exit(1);
+  }
   if (pass_b) {
     streams[0] = stdout;
   }
@@ -131,53 +136,65 @@ int	main(int argc, char **argv)
   buf_len = 0;
   
   /* read in stuff and count the number */
-  for (;;) {
+  while (1) {
     
-    if (non_block_b) {
-      FD_ZERO(&listen_set);
-      FD_SET(0, &listen_set);
-      ret = select(1, &listen_set, NULL, NULL, NULL);
-      if (ret == -1) {
-	(void)fprintf(stderr, "%s: select error: %s\n",
-		      argv_program, strerror(errno));
-	exit(1);
-      }
-      if (! FD_ISSET(0, &listen_set)) {
-	continue;
-      }
-    }
-    
-    /* read in data from input stream */
-    if (buf_size <= buf_len) {
-      last_read_n = 0;
-    }
-    else {
-      last_read_n = read(0, buf + buf_len, buf_size - buf_len);
-      if (last_read_n == 0) {
-	break;
-      }
-      if (last_read_n < 0) {
-	(void)fprintf(stderr, "%s: read on stdin error: %s\n",
-		      argv_program, strerror(errno));
-	exit(1);
+    if (! eof_b) {
+      if (non_block_b) {
+	FD_ZERO(&listen_set);
+	FD_SET(0, &listen_set);
+	ret = select(1, &listen_set, NULL, NULL, NULL);
+	if (ret == -1) {
+	  (void)fprintf(stderr, "%s: select error: %s\n",
+			argv_program, strerror(errno));
+	  exit(1);
+	}
+	if (! FD_ISSET(0, &listen_set)) {
+	  continue;
+	}
       }
       
-      if (very_verbose_b) {
-	(void)fprintf(stderr, "Read %d bytes\n", last_read_n);
+      /* read in data from input stream */
+      if (buf_size <= buf_len) {
+	last_read_n = 0;
       }
-      if (run_md5_b) {
-	md5_buffer(buf + buf_len, last_read_n, &md5);
+      else {
+	last_read_n = read(0, buf + buf_len, buf_size - buf_len);
+	if (last_read_n < 0) {
+	  (void)fprintf(stderr, "%s: read on stdin error: %s\n",
+			argv_program, strerror(errno));
+	  exit(1);
+	}
+	else if (last_read_n > 0) {
+	  if (very_verbose_b) {
+	    (void)fprintf(stderr, "Read %d bytes\n", last_read_n);
+	  }
+	  if (last_read_n > 0 && run_md5_b) {
+	    md5_buffer(buf + buf_len, last_read_n, &md5);
+	  }
+	  
+	  read_c += last_read_n;
+	  buf_len += last_read_n;
+	}
+	else {
+	  /* last_read_n == 0 */
+	  /* is the buffer empty */
+	  if (buf_len == 0) {
+	    break;
+	  }
+	  eof_b = 1;
+	}
       }
-      
-      read_c += last_read_n;
-      buf_len += last_read_n;
     }
     
-    /* real simple throttle code */
     if (throttle_size == 0) {
       write_size = buf_len;
     }
     else {
+      /*
+       * throttle the writes by sleeping
+       */
+      
+      /* figure out how long we have been writing */
       gettimeofday(&now, NULL);
       now.tv_sec -= start.tv_sec;
       if (now.tv_usec < start.tv_usec) {
@@ -196,18 +213,18 @@ int	main(int argc, char **argv)
 	((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
       
       /* have we read too much? */
-      if (read_c >= write_max) {
-	/* if we can't write and we didn't read, no use spinning */
-	if (last_read_n == 0) {
-	  struct timeval	timeout;
-	  float			dist;
-	  
-	  dist = ((float)read_c - (float)write_max) / (float)throttle_size;
-	  timeout.tv_sec = dist;
-	  timeout.tv_usec = ((float)dist - (float)timeout.tv_sec) * 1000000.0;
-	  (void)select(0, NULL, NULL, NULL, &timeout);
-	}
-	write_size = 0;
+      if (read_c > write_max) {
+	/*
+	 * Since we've read enough, we need to take our time with the
+	 * write.  Just sleep for a certain amount of time and write
+	 * out the throttled data.
+	 */
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 1000000 / WRITES_PER_SEC;
+	(void)select(0, NULL, NULL, NULL, &timeout);
+	
+	/* if we sleep for 1/X of a second so write 1/X of throttle-size */
+	write_size = throttle_size / WRITES_PER_SEC;
       }
       else {
 	write_size = write_max - read_c;
@@ -230,11 +247,15 @@ int	main(int argc, char **argv)
 	  }
 	}
       }
-
+      
+      if (very_verbose_b) {
+	(void)fprintf(stderr, "wrote %ld bytes\n", write_size);
+      }
+      
       /*
-       * Print out our dots.  The problem here is when write_c
-       * overflows a long-integer and therefore our dot-loop will go
-       * infinite.  We therefore continually reset the dot sizes.
+       * Print out our dots.  Because write_c might overflow and make
+       * our dot-loop will go infinite, we continually reset the dot
+       * sizes.
        */
       if (dot_size > 0) {
 	write_c += write_size;
@@ -253,6 +274,9 @@ int	main(int argc, char **argv)
 	memmove(buf, buf + write_size, buf_len - write_size);
       }
       buf_len -= write_size;
+      if (eof_b && buf_len == 0) {
+	break;
+      }
     }
   }
   
@@ -270,17 +294,19 @@ int	main(int argc, char **argv)
   
   /* write some report info */
   if (verbose_b) {
-    int	speed;
+    int		speed;
+    float	secs;
+    
     (void)fprintf(stderr, "%s: processed %s in %ld.%02ld secs",
 		  argv_program, byte_size(read_c), now.tv_sec,
 		  now.tv_usec / 10000);
     /* NOTE: this needs to be in a separate printf */
-    if (now.tv_sec == 0 && now.tv_usec == 0) {
+    secs = ((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
+    if (secs == 0.0) {
       speed = read_c;
     }
     else {
-      speed = (float)read_c /
-	((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
+      speed = (float)read_c / secs;
     }
     (void)fprintf(stderr, " or %s/sec\n", byte_size(speed));
   }
