@@ -8,8 +8,9 @@ http://256.com/sources/
 
 DOCUMENTATION:
 
-Sorry for the limited docs here.  Basically null is a combination of
-/dev/null, tee, md5sum, with the addition of some other features.
+Sorry for the limited documentation here.  Basically null is a
+combination of /dev/null, tee, md5sum, with the addition of some other
+features.
 
 -------------------------------------------------------------------------------
 
@@ -46,7 +47,7 @@ really accomplishes anything.
 
   [-p]              or --pass-input          pass input data to output
 
-This will write the intput to the standard output.
+This will write the input to the standard output.
 
   [-r]              or --read-pagination     read pagination data
 
@@ -65,12 +66,8 @@ connection for instance.
 
   [-w]              or --write-pagination    write paginate data
 
-Null can add basic pagination information into the stream.  Network
-transmissions often block the input and output to fixed sizes and add
-\0 characters at the end as padding.  With pagination, these
-extraneous characters will be removed and so MD5 calculations (with
--m) will be valid.  This should be used to write output to a null with
-a -r flag specified.
+Like -r but this should be used to write output to a null with a -r
+flag specified.
 
 -------------------------------------------------------------------------------
 
@@ -81,7 +78,7 @@ To write output to multiple log files:
 	tar -cvzf - /usr | \
 		null -f /backup/usr.tar.gz -f /backup2/usr.tar.gz
 
-To trasmit some files between two systems with pagination and while
+To transmit some files between two systems with pagination and while
 reporting the md5 signature of the data.  On the remote host:
 
 	nc -l -p 5000 | null -r -p -m | tar -xf -
