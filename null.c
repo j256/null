@@ -73,8 +73,9 @@ static	char	*byte_size(const int count)
 
 int	main(int argc, char **argv)
 {
-  unsigned int	pass_n, ret, file_c, dot_c;
+  unsigned int	pass_n, file_c, dot_c;
   unsigned long	inc = 0;
+  int		ret;
   FILE		**streams = NULL;
   fd_set	listen_set;
   char		*buf, md5_result[MD5_SIZE], *md5_p;
@@ -104,7 +105,7 @@ int	main(int argc, char **argv)
   }
   
   if (outfiles.aa_entry_n > 0) {
-    for (file_c = 0; file_c < outfiles.aa_entry_n; file_c++) {
+    for (file_c = 0; file_c < (unsigned int)outfiles.aa_entry_n; file_c++) {
       char	*path = ARGV_ARRAY_ENTRY(outfiles, char *, file_c);
       
       streams[file_c + pass_n] = fopen(path, "w");
@@ -156,7 +157,7 @@ int	main(int argc, char **argv)
       (void)fprintf(stderr, "Read %d bytes\n", ret);
     }
     if (run_md5_b) {
-      md5_process(&md5, buf, ret);
+      md5_buffer(buf, ret, &md5);
     }
     
     if (dot_size > 0) {
