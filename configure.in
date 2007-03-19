@@ -6,7 +6,7 @@ dnl       at the very top of the configure script.
 dnl
 dnl Copyright 1995 by Gray Watson
 dnl
-dnl This file is part of the null library.
+dnl This file is part of the null utility.
 dnl
 dnl Permission to use, copy, modify, and distribute this software for
 dnl any purpose and without fee is hereby granted, provided that the
@@ -27,7 +27,7 @@ AC_REVISION($Revision$)dnl
 AC_INIT(null.c)
 AC_CONFIG_HEADER(conf.h)
 
-AC_CHECKING(configurations for the null library)
+AC_CHECKING(configurations for the null utility)
 
 ##############################################################################
 AC_CHECKING(build utilities)
