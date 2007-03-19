@@ -66,7 +66,7 @@ static	argv_array_t	outfiles;		/* outfiles for read data */
 
 static	argv_t	args[] = {
   { 'a',	"all-read",	ARGV_BOOL_INT,			&read_all_b,
-    NULL,			"real all input before outputting" },
+    NULL,			"read all input before outputting" },
   { 'b',	"buffer-size",	ARGV_U_SIZE,			&buf_size,
     "size",			"size of input and output buffer" },
   { 'd',	"dot-blocks",	ARGV_U_SIZE,			&dot_size,
@@ -367,9 +367,10 @@ static	int	read_pagination(char *buf, const int buf_len,
 int	main(int argc, char **argv)
 {
   int			file_c, input_fd;
-  unsigned long		read_c = 0, write_bytes_c = 0, read_size;
+  unsigned long long	write_bytes_c = 0, last_write_c = 0;
+  unsigned long		read_c = 0, read_size;
   unsigned long		buf_len, write_max, to_write, min_write = 0;
-  unsigned long		write_size, write_c = 0, last_write_c = 0;
+  unsigned long		write_size, write_c = 0;
   int			read_n, ret, eof_b = 0, open_out_b = 1;
   FILE			**streams = NULL;
   fd_set		listen_set;
@@ -710,20 +711,19 @@ int	main(int argc, char **argv)
     }
     
     if (rate_every > 0) {
-      time_t		now_secs;
-      unsigned long	diff;
+      time_t			now_secs;
+      unsigned long long	diff;
       
       now_secs = time(NULL);
       if (last_rate == 0) {
 	last_rate = now_secs;
       }
       else if (last_rate + rate_every <= now_secs) {
-	diff = write_c - last_write_c;
-	diff = diff * buf_size / (now_secs - last_rate);
-	(void)fprintf(stderr, "\rWrote %ld blks at %s per sec      ",
-		      write_c, byte_size(diff));
+	diff = (write_bytes_c - last_write_c) / (now_secs - last_rate);
+	(void)fprintf(stderr, "\rWriting at %s per sec      ",
+		      byte_size(diff));
 	last_rate = now_secs;
-	last_write_c = write_c;
+	last_write_c = write_bytes_c;
       }
     }
   }
