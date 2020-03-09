@@ -11,56 +11,56 @@ features.
 
 Here are more details on some of the less obvious flags.
 
-  [-d size]         or --dot-blocks          show a dot each X bytes of input
+* [-d size]         or --dot-blocks          show a dot each X bytes of input
 
-With this size, you can have null output a period ('.') to standard
-error for every X bytes read in.  You can specify the size as 20k or
-100m.
+	With this size, you can have null output a period ('.') to standard
+	error for every X bytes read in.  You can specify the size as 20k or
+	100m.
 
-  [-f output-file]  or --output-file         output file(s) to write input
+* [-f output-file]  or --output-file         output file(s) to write input
 
-You can write any input bytes into an output file by using this
-option.  To handle multiple files, specify multiple -f options.
+	You can write any input bytes into an output file by using this
+	option.  To handle multiple files, specify multiple -f options.
 
-  [-F]              or --flush-output        flush output to files
+*  [-F]              or --flush-output        flush output to files
 
-This will cause null to call fflush on each of the output streams
-after it writes to them.
+	This will cause null to call fflush on each of the output streams
+	after it writes to them.
 
-  [-m]              or --md5                 run input bytes through md5
+* [-m]              or --md5                 run input bytes through md5
 
-This will display the md5 signature for the input data.  If you are
-transporting data across a stream, it is useful to use the -r and -w
-options.  See below.
+	This will display the md5 signature for the input data.  If you are
+	transporting data across a stream, it is useful to use the -r and -w
+	options.  See below.
 
-  [-n]              or --non-block           don't block on input
+* [-n]              or --non-block           don't block on input
 
-Set the input file-descriptor to be non-blocking.  Not sure if this
-really accomplishes anything.
+	Set the input file-descriptor to be non-blocking.  Not sure if this
+	really accomplishes anything.
 
-  [-p]              or --pass-input          pass input data to output
+* [-p]              or --pass-input          pass input data to output
 
-This will write the input to the standard output.
+	This will write the input to the standard output.
 
-  [-r]              or --read-pagination     read pagination data
+*  [-r]              or --read-pagination     read pagination data
 
-Null can add basic pagination information into the stream.  Network
-transmissions often block the input and output to fixed sizes and add
-\0 characters at the end as padding.  With pagination, these
-extraneous characters will be removed and so MD5 calculations (with
--m) will be valid.  This should be used to read the output of null
-with a -w flag specified.
+	Null can add basic pagination information into the stream.  Network
+	transmissions often block the input and output to fixed sizes and add
+	`\0` characters at the end as padding.  With pagination, these
+	extraneous characters will be removed and so MD5 calculations (with
+	-m) will be valid.  This should be used to read the output of null
+	with a -w flag specified.
 
-  [-t size]         or --throttle-size       throttle output to X bytes / sec
+* [-t size]         or --throttle-size       throttle output to X bytes / sec
 
-This will throttle the output of null to a specific size (10k or 1m)
-per second.  This is useful if you don't want to overflow a network
-connection for instance.
+	This will throttle the output of null to a specific size (10k or 1m)
+	per second.  This is useful if you don't want to overflow a network
+	connection for instance.
 
-  [-w]              or --write-pagination    write paginate data
+* [-w]              or --write-pagination    write paginate data
 
-Like -r but this should be used to write output to a null with a -r
-flag specified.
+	Like -r but this should be used to write output to a null with a -r
+	flag specified.
 
 ## Examples
 
