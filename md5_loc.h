@@ -1,7 +1,5 @@
 /*
  * MD5_LOC.H - local header file for MD5C.C
- *
- * $Id: md5_loc.h,v 1.1 2000/03/07 19:03:31 gray Exp $
  */
 
 /*

@@ -1,7 +1,3 @@
-#
-# $Id: Makefile.all.in,v 1.1 2000/03/07 19:30:13 gray Exp $
-#
-
 # default root installation directory
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -51,6 +47,7 @@ clean :
 distclean : clean
 	rm -f confdefs.h config.status config.log config.cache conf.h
 	rm -f Makefile
+	rm -rf autom4te.cache
 #	rm -f configure
 
 installdirs :
@@ -58,6 +55,9 @@ installdirs :
 
 install : $(UTIL)
 	$(INSTALL_PROGRAM) $(UTIL) $(bindir)
+
+configure : configure.in
+	autoconf
 
 $(UTIL) : $(UTIL).o $(OBJS)
 	rm -f $@

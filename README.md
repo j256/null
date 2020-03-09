@@ -1,20 +1,13 @@
--------------------------------------------------------------------------------
+Null Utility
+============
 
-Null Utility README:
-
-http://256.com/sources/ 
-
--------------------------------------------------------------------------------
-
-DOCUMENTATION:
+## Documentation
 
 Sorry for the limited documentation here.  Basically null is a
 combination of /dev/null, tee, md5sum, with the addition of some other
 features.
 
--------------------------------------------------------------------------------
-
-ARGUMENTS:
+## Arguments
 
 Here are more details on some of the less obvious flags.
 
@@ -69,9 +62,7 @@ connection for instance.
 Like -r but this should be used to write output to a null with a -r
 flag specified.
 
--------------------------------------------------------------------------------
-
-EXAMPLES:
+## Examples
 
 To write output to multiple log files:
 
@@ -95,21 +86,8 @@ and print a dot for every 10kB.
 
 	tar -cf - . | null -d 10k -t 100k -p | nc remote-hostname 5000
 
--------------------------------------------------------------------------------
-
 REPOSITORY:
 
-The newest versions of the library are available via the web:
+The newest versions of the library are available via: https://github.com/j256/null
 
-	http://256.com/sources/null/
-
--------------------------------------------------------------------------------
-
-If you have any questions or problems feel free to send me mail.
-
-Gray Watson
-http://256.com/gray/
-
--------------------------------------------------------------------------------
-$Id$
--------------------------------------------------------------------------------
+Enjoy, Gray Watson

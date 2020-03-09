@@ -15,8 +15,6 @@
  * Gray Watson makes no representations about the suitability of the
  * software described herein for any purpose.  It is provided "as is"
  * without express or implied warranty.
- *
- * The author may be contacted at gray.watson@letters.com
  */
 
 #if defined(WIN32)
@@ -48,9 +46,6 @@
 #include "argv_loc.h"
 #include "compat.h"
 #include "conf.h"
-
-static	char	*rcs_id =
-  "$Id$";
 
 /* internal routines */
 static	void	do_list(argv_t *grid, const int arg_c, char **argv,

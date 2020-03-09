@@ -1,9 +1,7 @@
 /*
  * /dev/null program
  *
- * Copyright 2000 by Gray Watson
- *
- * $Id$
+ * Copyright 2020 by Gray Watson
  */
 
 #include <errno.h>
@@ -757,9 +755,9 @@ int	main(int argc, char **argv)
     int		speed;
     float	secs;
     
-    (void)fprintf(stderr, "%s: processed %s in %ld.%02ld secs",
-		  argv_program, byte_size(read_c), now.tv_sec,
-		  now.tv_usec / 10000);
+    long msecs = now.tv_usec / 1000;
+    (void)fprintf(stderr, "%s: processed %s in %ld.%03ld secs",
+		  argv_program, byte_size(read_c), now.tv_sec, msecs);
     /* NOTE: this needs to be in a separate printf */
     secs = ((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
     if (secs == 0.0) {

@@ -56,9 +56,6 @@
 #include "md5.h"
 #include "md5_loc.h"
 
-static	char	*rcs_id =
-  "$Id$";
-
 /****************************** local routines *******************************/
 
 /*

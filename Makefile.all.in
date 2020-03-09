@@ -1,7 +1,3 @@
-#
-# $Id$
-#
-
 # default root installation directory
 prefix = @prefix@
 exec_prefix = @exec_prefix@

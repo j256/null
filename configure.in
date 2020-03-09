@@ -19,11 +19,6 @@ dnl Gray Watson makes no representations about the suitability of the
 dnl software described herein for any purpose.  It is provided "as is"
 dnl without express or implied warranty.
 dnl
-dnl The author may be contacted at gray.watson@letters.com
-dnl
-dnl $Id: configure.in,v 1.1 2000/03/07 19:30:15 gray Exp $
-dnl
-AC_REVISION($Revision: 1.1 $)dnl
 AC_INIT(null.c)
 AC_CONFIG_HEADER(conf.h)
 
