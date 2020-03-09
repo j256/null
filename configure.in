@@ -21,9 +21,9 @@ dnl without express or implied warranty.
 dnl
 dnl The author may be contacted at gray.watson@letters.com
 dnl
-dnl $Id$
+dnl $Id: configure.in,v 1.1 2000/03/07 19:30:15 gray Exp $
 dnl
-AC_REVISION($Revision$)dnl
+AC_REVISION($Revision: 1.1 $)dnl
 AC_INIT(null.c)
 AC_CONFIG_HEADER(conf.h)
 
@@ -81,6 +81,22 @@ else
 		CC="$CC $ac_cv_ansi_cc_flags"
 	fi
 fi
+AC_MSG_CHECKING(processor endianness)
+AC_TRY_RUN([
+int main() {
+  unsigned int x = 1;
+  int val = (int)(((char *)&x)[0]);
+  return val;
+}
+],[ac_cv_endianness=big],[ac_cv_endianness=little]
+)
+AC_MSG_RESULT($ac_cv_endianness)
+if test "$ac_cv_endianness" = "big" ; then
+	AC_DEFINE(NULL_BIG_ENDIAN)
+else
+	AC_DEFINE(NULL_LITTLE_ENDIAN)
+fi
+
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 AC_CONST

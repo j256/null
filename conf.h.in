@@ -18,7 +18,7 @@
  *
  * The author may be contacted at gray.watson@letters.com
  *
- * $Id$
+ * $Id: conf.h.in,v 1.1 2000/03/07 19:30:14 gray Exp $
  */
 
 #ifndef __CONF_H__
@@ -72,5 +72,8 @@
 #define HAVE_STRNCMP 0
 #define HAVE_STRNCPY 0
 #define HAVE_STRSEP 0
+/* processor endian-ness */
+#undef NULL_BIG_ENDIAN
+#undef NULL_LITTLE_ENDIAN
 
 #endif /* ! __CONF_H__ */

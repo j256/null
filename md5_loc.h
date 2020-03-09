@@ -1,7 +1,7 @@
 /*
  * MD5_LOC.H - local header file for MD5C.C
  *
- * $Id$
+ * $Id: md5_loc.h,v 1.1 2000/03/07 19:03:31 gray Exp $
  */
 
 /*
@@ -30,6 +30,8 @@
 #ifndef __MD5_LOC_H__
 #define __MD5_LOC_H__
 
+#include "conf.h"
+
 #define HEX_STRING	"0123456789abcdef"	/* to convert to hex */
 #define BLOCK_SIZE_MASK	(MD5_BLOCK_SIZE - 1)
 
@@ -37,14 +39,14 @@
  * Define my endian-ness.  Could not do in a portable manner using the
  * include files -- grumble.
  */
-#if defined(__alpha) || defined(WIN32) || defined(__i386__)
+#if defined(__alpha) || defined(WIN32) || defined(__i386__) || defined(NULL_LITTLE_ENDIAN)
 /*
  * little endian
  */
 #define SWAP(n)	(n)
 #endif
 
-#ifdef __sparc
+#if defined(__sparc) || defined(NULL_BIG_ENDIAN)
 /*
  * big endian - big is better
  */
