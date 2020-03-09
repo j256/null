@@ -86,7 +86,7 @@ and print a dot for every 10kB.
 
 	tar -cf - . | null -d 10k -t 100k -p | nc remote-hostname 5000
 
-REPOSITORY:
+## Repository
 
 The newest versions of the library are available via: https://github.com/j256/null
 
