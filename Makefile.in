@@ -21,7 +21,7 @@ LIBS	= $(LIBRARIES)
 
 UTIL = null
 
-CCFLAGS = -g
+CCFLAGS = -g -O2
 #LDFLAGS = -g
 LDFLAGS =
 
