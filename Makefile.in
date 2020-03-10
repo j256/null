@@ -73,6 +73,7 @@ $(UTIL) : $(UTIL).o $(OBJS)
 # depend.  Please do not edit by hand.
 #
 
-argv.o: argv.c argv.h argv_loc.h
-md5.o: md5.c md5.h md5_loc.h
+argv.o: argv.c argv.h argv_loc.h compat.h conf.h
+compat.o: compat.c conf.h compat.h
+md5.o: md5.c md5.h md5_loc.h conf.h
 null.o: null.c argv.h md5.h

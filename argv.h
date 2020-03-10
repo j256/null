@@ -34,8 +34,6 @@
 /* used to handle the const operator */
 /* const is available */
 
-/* NOTE: start of $Id$ */
-
 /*
  * Generic and standardized argument processor.  You describe the arguments
  * that you are looking for along with their types and these routines do the

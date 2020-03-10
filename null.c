@@ -24,14 +24,7 @@
 #include "argv.h"
 #include "md5.h"
 
-#ifdef __GNUC__
-#ident "$Id$"
-#else
-static  char    *ident_str =
-  "$Id$";
-#endif
-
-static	char	*null_version = "$NullVersion: 1.0.0 March 7, 2000";
+static	char	*null_version = "$NullVersion: 1.1.0 March 10, 2020";
 
 #define BUFFER_SIZE	100000		/* size of buffer */
 #define WRITES_PER_SEC	10		/* throttle to X writes/sec.  X > 1. */
