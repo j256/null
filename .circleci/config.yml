@@ -1,0 +1,14 @@
+# config file for circleci
+version: 2 
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk-browsers
+    steps:
+      - checkout
+      - run:
+          name: configure
+          command: configure
+      - run:
+          name: compile
+          command: make
