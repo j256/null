@@ -162,13 +162,11 @@ static	char	*byte_size(const unsigned long size)
 static	int	write_pagination(const char *buf, const int buf_len,
 				 const int last_b)
 {
-  const char	*buf_p, *bounds_p, *write_p = buf;
-  unsigned int	write_len;
-  int		len;
+  const char	*buf_p, *write_p = buf;
   
-  len = strlen(PAGINATION_ESC);
+  int len = strlen(PAGINATION_ESC);
   
-  bounds_p = buf + buf_len;
+  const char *bounds_p = buf + buf_len;
   for (buf_p = buf; buf_p + len < bounds_p;) {
     
     /* if we don't have a pagination-escapge string then move forward */
@@ -183,7 +181,7 @@ static	int	write_pagination(const char *buf, const int buf_len,
      * input contained a pagination escape by mistake.
      */
     buf_p += len;
-    write_len = buf_p - write_p;
+    unsigned int write_len = buf_p - write_p;
     if (fwrite(write_p, sizeof(char), write_len, stdout) != write_len) {
       (void)fprintf(stderr,
 		    "%s: ERROR.  Could not write full pagination block.\n",
@@ -256,8 +254,7 @@ static	int	read_pagination(char *buf, const int buf_len,
 				unsigned long *to_write_p, const int last_b)
 {
   static int	start_b = 0, end_b = 0;
-  char		*buf_p = buf, *bounds_p;
-  int		len;
+  char		*buf_p = buf;
   
   /* if we've already reached the end then throw away all else */
   if (end_b) {
@@ -268,9 +265,9 @@ static	int	read_pagination(char *buf, const int buf_len,
     return 0;
   }
   
-  bounds_p = buf + buf_len;
+  char *bounds_p = buf + buf_len;
   
-  len = strlen(PAGINATION_ESC);
+  int len = strlen(PAGINATION_ESC);
   
   if (! start_b) {
     if (buf_len < len + 1) {
@@ -364,18 +361,13 @@ static	int	read_pagination(char *buf, const int buf_len,
 
 int	main(int argc, char **argv)
 {
-  int			file_c, input_fd;
   unsigned long long	write_bytes_c = 0, last_write_c = 0;
-  unsigned long		read_c = 0, read_size;
-  unsigned long		buf_len, write_max, to_write, min_write = 0;
+  unsigned long		read_c = 0;
+  unsigned long		to_write, min_write = 0;
   unsigned long		write_size, write_c = 0;
-  int			read_n, ret, eof_b = 0, open_out_b = 1;
+  int			eof_b = 0, open_out_b = 1;
   FILE			**streams = NULL;
-  fd_set		listen_set;
-  char			*buf, md5_result[MD5_SIZE];
-  md5_t			md5;
-  time_t		last_rate = 0;
-  struct timeval	start, now, timeout;
+  time_t		last_rate_secs = 0;
   
   argv_help_string = "Null utility.  Also try --usage.";
   argv_version_string = null_version;
@@ -404,7 +396,8 @@ int	main(int argc, char **argv)
 		  argv_program, PASS_CHAR);
     write_page_b = 0;
   }
-  
+
+  int input_fd;
   if (input_path == NULL) {
     input_fd = STDIN_FD;
   }
@@ -434,17 +427,19 @@ int	main(int argc, char **argv)
     }
   }
   
-  buf = (char *)malloc(buf_size);
+  char *buf = (char *)malloc(buf_size);
   if (buf == NULL) {
     (void)fprintf(stderr, "could not allocate %ld bytes for buffer\n",
 		  buf_size);
     exit(1);
   }
   
+  md5_t md5;
   if (run_md5_b) {
     md5_init(&md5);
   }
   
+  struct timeval start;
   gettimeofday(&start, NULL);
   
   if (write_page_b) {
@@ -461,7 +456,8 @@ int	main(int argc, char **argv)
   }
   
   /* read in stuff and count the number */
-  buf_len = 0;
+  unsigned long buf_len = 0;
+  fd_set listen_set;
   while (1) {
     
     if (eof_b) {
@@ -471,7 +467,7 @@ int	main(int argc, char **argv)
       if (non_block_b) {
 	FD_ZERO(&listen_set);
 	FD_SET(input_fd, &listen_set);
-	ret = select(1, &listen_set, NULL, NULL, NULL);
+	int ret = select(1, &listen_set, NULL, NULL, NULL);
 	if (ret == -1) {
 	  (void)fprintf(stderr, "%s: select error: %s\n",
 			argv_program, strerror(errno));
@@ -488,13 +484,13 @@ int	main(int argc, char **argv)
 	to_write = buf_len;
       }
       else {
-	read_size = buf_size - buf_len;
+	unsigned long read_size = buf_size - buf_len;
 	if (stop_after > 0 && stop_after - read_c < read_size) {
 	  read_size = stop_after - read_c;
 	}
 	
 	/* read from standard-in */
-	read_n = read(input_fd, buf + buf_len, read_size);
+	int read_n = read(input_fd, buf + buf_len, read_size);
 	if (read_n < 0) {
 	  (void)fprintf(stderr, "%s: read on stdin error: %s\n",
 			argv_program, strerror(errno));
@@ -571,6 +567,7 @@ int	main(int argc, char **argv)
        */
       
       /* figure out how long we have been writing */
+      struct timeval now;
       gettimeofday(&now, NULL);
       now.tv_sec -= start.tv_sec;
       if (now.tv_usec < start.tv_usec) {
@@ -585,7 +582,7 @@ int	main(int argc, char **argv)
       }
       
       /* calculate what we should have written by now */
-      write_max = (float)throttle_size *
+      unsigned long write_max = (float)throttle_size *
 	((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
       
       /* figure out what we need to write to get the rate correct */
@@ -608,6 +605,7 @@ int	main(int argc, char **argv)
 	 * write.  Just sleep for a certain amount of time and write
 	 * out the throttled data.
 	 */
+	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 1000000 / WRITES_PER_SEC;
 	(void)select(0, NULL, NULL, NULL, &timeout);
@@ -652,6 +650,7 @@ int	main(int argc, char **argv)
       }
       
       /* write out to any files */
+      int file_c;
       for (file_c = 0; file_c < outfiles.aa_entry_n; file_c++) {
 	if (open_out_b) {
 	  char	*path = ARGV_ARRAY_ENTRY(outfiles, char *, file_c);
@@ -709,18 +708,15 @@ int	main(int argc, char **argv)
     }
     
     if (rate_every > 0) {
-      time_t			now_secs;
-      unsigned long long	diff;
-      
-      now_secs = time(NULL);
-      if (last_rate == 0) {
-	last_rate = now_secs;
+      time_t now_secs = time(NULL);
+      if (last_rate_secs == 0) {
+	last_rate_secs = now_secs;
       }
-      else if (last_rate + rate_every <= now_secs) {
-	diff = (write_bytes_c - last_write_c) / (now_secs - last_rate);
+      else if (last_rate_secs + rate_every <= now_secs) {
+	unsigned long long diff = (write_bytes_c - last_write_c) / (now_secs - last_rate_secs);
 	(void)fprintf(stderr, "\rWriting at %s per sec      ",
 		      byte_size(diff));
-	last_rate = now_secs;
+	last_rate_secs = now_secs;
 	last_write_c = write_bytes_c;
       }
     }
@@ -738,6 +734,7 @@ int	main(int argc, char **argv)
     }
   }
   
+  struct timeval now;
   gettimeofday(&now, NULL);
   now.tv_sec -= start.tv_sec;
   if (now.tv_usec < start.tv_usec) {
@@ -752,14 +749,12 @@ int	main(int argc, char **argv)
   
   /* write some report info */
   if (verbose_b) {
-    int		speed;
-    float	secs;
-    
     long msecs = now.tv_usec / 1000;
     (void)fprintf(stderr, "%s: processed %s in %ld.%03ld secs",
 		  argv_program, byte_size(read_c), now.tv_sec, msecs);
     /* NOTE: this needs to be in a separate printf */
-    secs = ((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
+    float secs = ((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
+    int speed;
     if (secs == 0.0) {
       speed = read_c;
     }
@@ -770,6 +765,7 @@ int	main(int argc, char **argv)
   }
   
   /* close the output paths */
+  int file_c;
   for (file_c = 0; file_c < outfiles.aa_entry_n; file_c++) {
     if (streams[file_c] != NULL) {
       (void)fclose(streams[file_c]);
@@ -790,9 +786,9 @@ int	main(int argc, char **argv)
   }
   
   if (run_md5_b) {
-    char	md5_string[64];
-    
+    char md5_result[MD5_SIZE];
     md5_finish(&md5, md5_result);
+    char md5_string[64];
     md5_sig_to_string(md5_result, md5_string, sizeof(md5_string));
     
     (void)fprintf(stderr, "%s: md5 signature of input = '%s'\n",
