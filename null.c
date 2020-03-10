@@ -37,6 +37,7 @@ static	char	*null_version = "$NullVersion: 1.0.0 March 7, 2000";
 #define WRITES_PER_SEC	10		/* throttle to X writes/sec.  X > 1. */
 #define PASS_CHAR	'p'		/* pass - argument */
 #define STDIN_FD	0		/* stdin file descriptor */
+#define BYTE_SIZE_BUF_LEN 80		/* length of the byte-size buffer */
 
 #define PAGINATION_ESC	"null-page-"	/* special pagination string */
 #define PAGINATION_START	's'	/* start character */
@@ -114,11 +115,15 @@ static	argv_t	args[] = {
  * ARGUMENTS:
  *
  * size -> Size we are translating.
+ * buf -> Buffer or null to use the global-one.
  */
-static	char	*byte_size(const unsigned long size)
+static	char	*byte_size(const unsigned long size, char *buf)
 {
-  static char	buf[80];
+  static char	global_buf[BYTE_SIZE_BUF_LEN];
   
+  if (buf == NULL) {
+    buf = global_buf;
+  }
   if (size > 1024L * 1024L * 1024L) {
     (void)sprintf(buf, "%.1fg (%ld)",
 		  (float)(size) / (float)(1024L * 1024L * 1024L), size);
@@ -714,8 +719,9 @@ int	main(int argc, char **argv)
       }
       else if (last_rate_secs + rate_every <= now_secs) {
 	unsigned long long diff = (write_bytes_c - last_write_c) / (now_secs - last_rate_secs);
-	(void)fprintf(stderr, "\rWriting at %s per sec      ",
-		      byte_size(diff));
+	char buf2[BYTE_SIZE_BUF_LEN];
+	(void)fprintf(stderr, "\rWriting at %s per sec (total %s)      ",
+		      byte_size(diff, NULL), byte_size(write_bytes_c, buf2));
 	last_rate_secs = now_secs;
 	last_write_c = write_bytes_c;
       }
@@ -751,7 +757,7 @@ int	main(int argc, char **argv)
   if (verbose_b) {
     long msecs = now.tv_usec / 1000;
     (void)fprintf(stderr, "%s: processed %s in %ld.%03ld secs",
-		  argv_program, byte_size(read_c), now.tv_sec, msecs);
+		  argv_program, byte_size(read_c, NULL), now.tv_sec, msecs);
     /* NOTE: this needs to be in a separate printf */
     float secs = ((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
     int speed;
@@ -761,7 +767,7 @@ int	main(int argc, char **argv)
     else {
       speed = (float)read_c / secs;
     }
-    (void)fprintf(stderr, " or %s per sec\n", byte_size(speed));
+    (void)fprintf(stderr, " or %s per sec\n", byte_size(speed, NULL));
   }
   
   /* close the output paths */
