@@ -90,4 +90,4 @@ and print a dot for every 10kB.
 
 The newest versions of the library are available via: https://github.com/j256/null
 
-Enjoy, Gray Watson
+Enjoy.  Gray Watson
