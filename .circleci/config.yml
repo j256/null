@@ -12,3 +12,6 @@ jobs:
       - run:
           name: compile
           command: make
+      - run:
+          name: test
+          command: make test
