@@ -146,7 +146,7 @@
 
 /* some in-line "labels" for comments */
 #define USAGE_LABEL		"Usage: "	/* usage message start */
-#define VERSION_LABEL		"= "		/* default:no version prefix */
+#define VERSION_LABEL		""		/* default:no version prefix */
 #define LONG_LABEL		"or "		/* put before long-option */
 #define COMMENT_LABEL		""		/* put before comments */
 #define ARRAY_LABEL		" array"	/* put after displayed type */

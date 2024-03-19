@@ -2,10 +2,12 @@
 	* Changed the -R to be decimal seconds.
 	* Added a test shell script to validate stuff.
 	* Finally hooked up the circle-ci.
-	* Released version 1.1 just to get a version in github.
+	* Moved all sources into the src/ subdir.
+	* Released version 1.2.0 just to get a version in github.
 
 2020-03-08  Gray Watson
 	* Migrated this to github and did some updating.
+	* Was version 1.1.0.
 
 2002-11-12  Gray Watson
 	* Added -a --all-read flag.

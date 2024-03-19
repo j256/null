@@ -26,8 +26,7 @@
 #include "argv.h"
 #include "compat.h"
 #include "md5.h"
-
-static	char	*null_version = "$NullVersion: 1.1.0 March 10, 2020";
+#include "version.h"
 
 #define BUFFER_SIZE	100000		/* size of buffer */
 #define WRITES_PER_SEC	10		/* throttle to X writes/sec.  X > 1. */
@@ -411,7 +410,7 @@ int	main(int argc, char **argv)
   struct timeval	next_rate, rate_every;
 
   argv_help_string = "Null utility.  Also try --usage.";
-  argv_version_string = null_version;
+  argv_version_string = NULL_VERSION_STRING;
   
   argv_process(args, argc, argv);
   if (very_verbose_b) {
