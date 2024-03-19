@@ -96,6 +96,13 @@ AC_PROG_INSTALL
 AC_PROG_RANLIB
 AC_CONST
 AC_HEADER_STDC
+AC_CHECK_HEADERS(stdarg.h)
+if test "$ac_cv_header_stdarg_h" = "yes"; then
+	HAVE_STDARG_H=1
+else
+	HAVE_STDARG_H=0
+fi
+AC_SUBST(HAVE_STDARG_H)
 AC_CHECK_HEADERS(stdlib.h)
 if test "$ac_cv_header_stdlib_h" = "yes"; then
 	HAVE_STDLIB_H=1
@@ -126,7 +133,7 @@ AC_CHECK_FUNCS(atoi atol exit fclose fgets fopen fprintf fputc free fwrite)
 AC_CHECK_FUNCS(getenv malloc read realloc sprintf sscanf)
 
 # have compat functions
-AC_HAVE_FUNCS(strchr strcmp strcpy strlen strncmp strncpy strsep)
+AC_HAVE_FUNCS(strchr strcmp strcpy strlen strncmp strncpy strsep vsnprintf vsprintf)
 
 ##############################################################################
 AC_OUTPUT(Makefile)

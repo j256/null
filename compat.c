@@ -22,8 +22,17 @@
  * function just in case your system does not have them.
  */
 
+#include <stdio.h>
+
 #include "conf.h"
 #include "compat.h"
+
+#if HAVE_STDARG_H
+#include <stdarg.h>
+#endif
+#if HAVE_STRING_H
+#include <string.h>
+#endif
 
 #if HAVE_STRCHR == 0
 /*
@@ -196,3 +205,23 @@ char	*strsep(char **string_p, const char *delim)
   return tok;
 }
 #endif /* HAVE_STRSEP == 0 */
+
+/*
+ * Local snprintf function which delegates to vsnprintf or vsprintf when available.
+ */
+void	loc_snprintf(char *buf, int buf_size, const char *format, ...)
+{
+  va_list argp;
+  va_start(argp, format);
+#if HAVE_VSNPRINTF == 0
+#if HAVE_VSPRINTF == 0
+  // oh well just do a copy
+  strncpy(buf, format, buf_size);
+#else
+  vsprintf(buf, format, argp);
+#endif /* HAVE_VSNPRINTF == 0 */
+#else
+  vsnprintf(buf, buf_size, format, argp);
+#endif /* HAVE_VSPRINTF == 0 */
+  va_end(argp);
+}

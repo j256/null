@@ -624,6 +624,7 @@ LIBOBJS
 HAVE_UNISTD_H
 HAVE_STRING_H
 HAVE_STDLIB_H
+HAVE_STDARG_H
 EGREP
 GREP
 CPP
@@ -3703,6 +3704,24 @@ fi
 done
 
 
+for ac_header in stdarg.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "stdarg.h" "ac_cv_header_stdarg_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdarg_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_STDARG_H 1
+_ACEOF
+
+fi
+
+done
+
+if test "$ac_cv_header_stdarg_h" = "yes"; then
+	HAVE_STDARG_H=1
+else
+	HAVE_STDARG_H=0
+fi
+
 for ac_header in stdlib.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "stdlib.h" "ac_cv_header_stdlib_h" "$ac_includes_default"
@@ -3789,7 +3808,7 @@ done
 
 
 # have compat functions
-for ac_func in strchr strcmp strcpy strlen strncmp strncpy strsep
+for ac_func in strchr strcmp strcpy strlen strncmp strncpy strsep vsnprintf vsprintf
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

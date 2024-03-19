@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "conf.h"
+
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -22,6 +24,7 @@
 #include <sys/time.h>
 
 #include "argv.h"
+#include "compat.h"
 #include "md5.h"
 
 static	char	*null_version = "$NullVersion: 1.1.0 March 10, 2020";
@@ -110,26 +113,27 @@ static	argv_t	args[] = {
  * size -> Size we are translating.
  * buf -> Buffer or null to use the global-one.
  */
-static	char	*byte_size(const unsigned long size, char *buf)
+static	char	*byte_size(const unsigned long size, char *buf, int buf_size)
 {
   static char	global_buf[BYTE_SIZE_BUF_LEN];
   
   if (buf == NULL) {
     buf = global_buf;
+    buf_size = sizeof(global_buf);
   }
   if (size > 1024L * 1024L * 1024L) {
-    (void)sprintf(buf, "%.1fg (%ld)",
-		  (float)(size) / (float)(1024L * 1024L * 1024L), size);
+    loc_snprintf(buf, buf_size, "%.1fg (%ld)",
+		 (float)(size) / (float)(1024L * 1024L * 1024L), size);
   }
   else if (size > 1024L * 1024L) {
-    (void)sprintf(buf, "%.1fm (%ld)",
-		  (float)(size) / (float)(1024 * 1024), size);
+    loc_snprintf(buf, buf_size, "%.1fm (%ld)",
+		 (float)(size) / (float)(1024 * 1024), size);
   }
   else if (size > 1024L) {
-    (void)sprintf(buf, "%.1fk (%ld)", (float)size / (float)1024.0, size);
+    loc_snprintf(buf, buf_size, "%.1fk (%ld)", (float)size / (float)1024.0, size);
   }
   else {
-    (void)sprintf(buf, "%ldb", size);
+    loc_snprintf(buf, buf_size, "%ldb", size);
   }
   
   return buf;
@@ -714,7 +718,7 @@ int	main(int argc, char **argv)
 	unsigned long long diff = (write_bytes_c - last_write_c) / (now_secs - last_rate_secs);
 	char buf2[BYTE_SIZE_BUF_LEN];
 	(void)fprintf(stderr, "\rWriting at %s per sec (total %s)      ",
-		      byte_size(diff, NULL), byte_size(write_bytes_c, buf2));
+		      byte_size(diff, NULL, 0), byte_size(write_bytes_c, buf2, sizeof(buf2)));
 	last_rate_secs = now_secs;
 	last_write_c = write_bytes_c;
       }
@@ -750,7 +754,7 @@ int	main(int argc, char **argv)
   if (verbose_b) {
     long msecs = now.tv_usec / 1000;
     (void)fprintf(stderr, "%s: processed %s in %ld.%03ld secs",
-		  argv_program, byte_size(read_c, NULL), now.tv_sec, msecs);
+		  argv_program, byte_size(read_c, NULL, 0), now.tv_sec, msecs);
     /* NOTE: this needs to be in a separate printf */
     float secs = ((float)now.tv_sec + ((float)now.tv_usec / 1000000.0));
     int speed;
@@ -760,7 +764,7 @@ int	main(int argc, char **argv)
     else {
       speed = (float)read_c / secs;
     }
-    (void)fprintf(stderr, " or %s per sec\n", byte_size(speed, NULL));
+    (void)fprintf(stderr, " or %s per sec\n", byte_size(speed, NULL, 0));
   }
   
   /* close the output paths */

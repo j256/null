@@ -1,34 +1,23 @@
 2020-03-08  Gray Watson
-
 	* Migrated this to github and did some updating.
 
 2002-11-12  Gray Watson
-
 	* Added -a --all-read flag.
 
 2002-10-14  Gray Watson
-
 	* Fixed a bad throttle spin which ate a CPU.  Ugh.
 
 2001-02-24  Gray Watson
-
 	* Added --inpit-file.
-
 	* Added --stop-after argument.
 
 2000-03-07  Gray Watson
-
 	* Turning into a real package.
-
-	* Added pagination and fixed the md5 code.  Been wanting this for
-	a while.
+	* Added pagination and fixed the md5 code.  Been wanting this for a while.
 
 20000306  Gray Watson
-
 	* Fixed the throttling code which was majorly broken.
-
 	* Fixed dot overflow problems.
 
 19990518  Gray Watson
-
 	* Added -t (--throttle) command to null.
