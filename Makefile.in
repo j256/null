@@ -77,6 +77,8 @@ test-write-files : $(UTIL)
 	rm -f x.t y.t z.t
 	cat *.[ch] > x.t
 	# we should see the size of x.t in the output
+	cat x.t | wc -c
+	null -v -f y.t -f z.t x.t 2>&1
 	null -v -f y.t -f z.t x.t 2>&1 | grep `cat x.t | wc -c`
 	# output files should be the same
 	cmp x.t y.t
