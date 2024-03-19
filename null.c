@@ -49,7 +49,7 @@ static	int		help_b = ARGV_FALSE;	/* get help */
 static	int		run_md5_b = ARGV_FALSE;	/* run md5 on data */
 static	int		non_block_b = ARGV_FALSE; /* don't block on input */
 static	int		pass_b = ARGV_FALSE;	/* pass data through */
-static	int		rate_every = 0;		/* rate every X secs */
+static	float		rate_every_secs = 0.0;	/* rate every X decimal secs */
 static	int		read_page_b = 0;	/* read pagination info */
 static	unsigned long	stop_after = 0;		/* stop after X bytes */
 static	unsigned long	throttle_size = 0;	/* throttle bytes/second */
@@ -80,8 +80,8 @@ static	argv_t	args[] = {
     NULL,			"write input to standard output" },
   { 'r',	"read-pagination", ARGV_BOOL_INT,		&read_page_b,
     NULL,			"read pagination data (use with -w)" },
-  { 'R',	"rate-every",	ARGV_INT,			&rate_every,
-    "seconds",			"dump rate info every X secs" },
+  { 'R',	"rate-every",	ARGV_FLOAT,			&rate_every_secs,
+    "seconds",			"dump rate info every X decimal secs" },
   { 's',	"stop-after",	ARGV_U_SIZE,			&stop_after,
     "size",			"stop after size bytes" },
   { 't',	"throttle-size", ARGV_U_SIZE,			&throttle_size,
@@ -361,6 +361,45 @@ static	int	read_pagination(char *buf, const int buf_len,
   return bounds_p - buf;
 }
 
+/*
+ * Add one timeval into another
+ */
+static	void	timeval_add(struct timeval *from_p, struct timeval *to_p) {
+  to_p->tv_usec += from_p->tv_usec;
+  if (to_p->tv_usec > 1000000) {
+    to_p->tv_sec++;
+    to_p->tv_usec -= 1000000;
+  }
+  to_p->tv_sec += from_p->tv_sec;
+}
+
+/*
+ * Add one timeval into another
+ */
+static	void	timeval_subtract(struct timeval *from_p, struct timeval *to_p) {
+  to_p->tv_sec -= from_p->tv_sec;
+  if (to_p->tv_usec < from_p->tv_usec) {
+    to_p->tv_sec--;
+    to_p->tv_usec += 1000000;
+  }
+  to_p->tv_usec -= from_p->tv_usec;
+}
+
+/*
+ * Add one timeval into another
+ */
+static	int	check_timeval_after(struct timeval *t1_p, struct timeval *t2_p) {
+  if (t1_p->tv_sec > t2_p->tv_sec) {
+    return 1;
+  } else if (t1_p->tv_sec < t2_p->tv_sec) {
+    return 0;
+  } else if (t1_p->tv_usec > t2_p->tv_usec) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 int	main(int argc, char **argv)
 {
   unsigned long long	write_bytes_c = 0, last_write_c = 0;
@@ -369,8 +408,8 @@ int	main(int argc, char **argv)
   unsigned long		write_size, write_c = 0;
   int			eof_b = 0, open_out_b = 1;
   FILE			**streams = NULL;
-  time_t		last_rate_secs = 0;
-  
+  struct timeval	next_rate, rate_every;
+
   argv_help_string = "Null utility.  Also try --usage.";
   argv_version_string = null_version;
   
@@ -379,6 +418,13 @@ int	main(int argc, char **argv)
     verbose_b = 1;
   }
   
+  if (rate_every_secs > 0.0) {
+    rate_every.tv_sec = (int)rate_every_secs;
+    rate_every.tv_usec = ((float)rate_every_secs - (float)rate_every.tv_sec) * 1000000.0;
+    gettimeofday(&next_rate, NULL);
+    timeval_add(&rate_every, &next_rate);
+  }
+
   if (help_b) {
     (void)fprintf(stderr, "Null Utility: http://256.com/sources/null/\n");
     (void)fprintf(stderr,
@@ -571,16 +617,11 @@ int	main(int argc, char **argv)
       /* figure out how long we have been writing */
       struct timeval now;
       gettimeofday(&now, NULL);
-      now.tv_sec -= start.tv_sec;
-      if (now.tv_usec < start.tv_usec) {
-	now.tv_sec--;
-	now.tv_usec += 1000000;
-      }
-      now.tv_usec -= start.tv_usec;
+      timeval_subtract(&start, &now);
       
       /* really it should be 0 but we should write something */
       if (now.tv_sec == 0 && now.tv_usec == 0) {
-	now.tv_usec = 300000;
+	now.tv_usec = 100000;
       }
       
       /* calculate what we should have written by now */
@@ -709,23 +750,23 @@ int	main(int argc, char **argv)
       }
     }
     
-    if (rate_every > 0) {
-      time_t now_secs = time(NULL);
-      if (last_rate_secs == 0) {
-	last_rate_secs = now_secs;
-      }
-      else if (last_rate_secs + rate_every <= now_secs) {
-	unsigned long long diff = (write_bytes_c - last_write_c) / (now_secs - last_rate_secs);
+    if (rate_every_secs > 0.0) {
+      struct timeval now;
+      gettimeofday(&now, NULL);
+      if (check_timeval_after(&now, &next_rate)) {
+	float sec_diff = (float)(now.tv_sec - next_rate.tv_sec) + (float)(now.tv_usec - next_rate.tv_usec) / 1000000.0;
+	unsigned long long diff = (float)(write_bytes_c - last_write_c) / sec_diff;
 	char buf2[BYTE_SIZE_BUF_LEN];
 	(void)fprintf(stderr, "\rWriting at %s per sec (total %s)      ",
 		      byte_size(diff, NULL, 0), byte_size(write_bytes_c, buf2, sizeof(buf2)));
-	last_rate_secs = now_secs;
+	next_rate = now;
+	timeval_add(&rate_every, &next_rate);
 	last_write_c = write_bytes_c;
       }
     }
   }
   
-  if (rate_every > 0) {
+  if (rate_every_secs > 0.0) {
     (void)fputc('\n', stderr);
   }
   
@@ -739,12 +780,7 @@ int	main(int argc, char **argv)
   
   struct timeval now;
   gettimeofday(&now, NULL);
-  now.tv_sec -= start.tv_sec;
-  if (now.tv_usec < start.tv_usec) {
-    now.tv_sec--;
-    now.tv_usec += 1000000;
-  }
-  now.tv_usec -= start.tv_usec;
+  timeval_subtract(&start, &now);
   
   if (dot_size > 0) {
     (void)fputc('\n', stderr);
