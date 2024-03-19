@@ -33,6 +33,14 @@
  */
 
 /*
+ * INCLUDE DEFINES:
+ */
+#define HAVE_STDARG_H 0
+#define HAVE_STDLIB_H 0
+#define HAVE_STRING_H 0
+#define HAVE_UNISTD_H 0
+
+/*
  * LIBRARY DEFINES:
  */
 
@@ -53,7 +61,6 @@
 #define HAVE_MALLOC 0
 #define HAVE_READ 0
 #define HAVE_REALLOC 0
-#define HAVE_SPRINTF 0
 #define HAVE_SSCANF 0
 
 /*
@@ -68,6 +75,9 @@
 #define HAVE_STRNCMP 0
 #define HAVE_STRNCPY 0
 #define HAVE_STRSEP 0
+#define HAVE_VSNPRINTF 0
+#define HAVE_VSPRINTF 0
+
 /* processor endian-ness */
 #undef NULL_BIG_ENDIAN
 #undef NULL_LITTLE_ENDIAN

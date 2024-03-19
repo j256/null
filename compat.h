@@ -122,6 +122,11 @@ extern
 char	*strsep(char **string_p, const char *delim);
 #endif
 
+/*
+ * Local snprintf function which delegates to vsnprintf or vsprintf when available.
+ */
+void	loc_snprintf(char *buf, int buf_size, const char *format, ...);
+
 /*<<<<<<<<<<   This is end of the auto-generated output from fillproto. */
 
 #endif /* ! __COMPAT_H__ */
