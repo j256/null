@@ -97,7 +97,7 @@ test-usage : $(UTIL)
 
 test-throttle-rate : $(UTIL)
 	# should take more than a second because throttling and should see rate info
-	cat *.[ch] | ./null -b 10k -s 50k -t 50k -R 1 2>&1 | grep "Writing at"
+	cat *.[ch] | ./null -b 10k -s 100k -t 50k -R 1 2>&1 | grep "Writing at"
 
 test-pagination : $(UTIL)
 	# should not get error because tar worked
