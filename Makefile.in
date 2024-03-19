@@ -77,8 +77,6 @@ test-write-files : $(UTIL)
 	rm -f x.t y.t z.t
 	cat *.[ch] > x.t
 	# we should see the size of x.t in the output
-	cat x.t | wc -c
-	./null -v -f y.t -f z.t x.t 2>&1
 	./null -v -f y.t -f z.t x.t 2>&1 | grep `cat x.t | wc -c`
 	# output files should be the same
 	cmp x.t y.t
@@ -99,7 +97,7 @@ test-usage : $(UTIL)
 
 test-throttle-rate : $(UTIL)
 	# should take more than a second because throttling and should see rate info
-	cat *.[ch] | ./null -s 100k -t 100k -R 1 2>&1 | grep "Writing at"
+	cat *.[ch] | ./null -b 10k -s 50k -t 50k -R 1 2>&1 | grep "Writing at"
 
 test-pagination : $(UTIL)
 	# should not get error because tar worked
