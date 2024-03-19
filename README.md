@@ -1,6 +1,10 @@
 Null Utility
 ============
 
+[![ChangeLog](https://img.shields.io/github/v/release/j256/null?label=changelog&display_name=release)](https://github.com/j256/null/blob/master/src/main/javadoc/doc-files/changelog.txt)
+[![CircleCI](https://circleci.com/gh/j256/null.svg?style=shield)](https://circleci.com/gh/j256/null)
+[![GitHub License](https://img.shields.io/github/license/j256/null)](https://github.com/j256/null/blob/master/LICENSE.txt)
+
 ## Documentation
 
 Sorry for the limited documentation here.  Basically null is a
