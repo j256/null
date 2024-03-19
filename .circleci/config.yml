@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: configure
-          command: ./configure
+          command: make configure
       - run:
           name: compile
           command: make
