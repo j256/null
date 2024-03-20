@@ -62,7 +62,7 @@ $(UTIL) : $(UTIL).o $(OBJS)
 	mv a.out $@
 
 test : $(UTIL)
-	sh -x null_tests.sh
+	sh null_tests.sh
 	@ echo "Tests passed"
 
 .c.o :
