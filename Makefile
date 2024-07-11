@@ -17,17 +17,5 @@ src/Makefile :
 configure :
 	cd src ; ./configure
 
-clean :
-	cd src ; make $@
-
-distclean :
-	cd src ; make $@
-
-installdirs :
-	cd src ; make $@
-
-install :
-	cd src ; make $@
-
-test :
+clean distclean installdirs install test : src/Makefile
 	cd src ; make $@
